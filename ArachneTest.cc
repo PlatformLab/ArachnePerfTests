@@ -1,21 +1,35 @@
-#include "Arachne.h"
 #include <stdio.h>
+#include <vector>
+
+#include "Arachne.h"
+#include "Cycles.h"
 
 
+using PerfUtils::Cycles;
 
-void printInteger(int i) {
-   printf("%d\n", i);
+void printEveryTwo(int start, int end) {
+    std::vector<uint64_t> cycleCounts;
+    cycleCounts.reserve(100000);
+    for (int i = start; i < end; i+=2) {
+       cycleCounts.push_back(Cycles::rdtsc());
+       Arachne::yield();
+    }
+    if (start == 1) {
+        uint64_t startTime = Cycles::toNanoseconds(cycleCounts[0]);
+        for (int i = 0; i < cycleCounts.size(); i++) {
+            printf("%lu\n", Cycles::toNanoseconds(cycleCounts[i]) - startTime);
+        }
+        fflush(stdout);
+    }
 }
+
 int main(){
     // Initialize the library
     Arachne::threadInit();       
 
     // Add some work
-    Arachne::createTask([](){ printInteger(5); });
-    Arachne::createTask([](){ printInteger(4); });
-    Arachne::createTask([](){ printInteger(3); });
-    Arachne::createTask([](){ printInteger(2); });
-    Arachne::createTask([](){ printInteger(1); });
+    Arachne::createTask([](){ printEveryTwo(1,999); });
+    Arachne::createTask([](){ printEveryTwo(2,1000); });
     
     // Must be the last call
     Arachne::mainThreadJoinPool();
