@@ -16,7 +16,7 @@ void printEveryTwo(int start, int end) {
     }
     if (start == 1) {
         uint64_t startTime = Cycles::toNanoseconds(cycleCounts[0]);
-        for (int i = 0; i < cycleCounts.size(); i++) {
+        for (unsigned int i = 0; i < cycleCounts.size(); i++) {
             printf("%lu\n", Cycles::toNanoseconds(cycleCounts[i]) - startTime);
         }
         fflush(stdout);
