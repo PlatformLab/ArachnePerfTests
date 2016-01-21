@@ -10,8 +10,9 @@ using PerfUtils::Cycles;
 
 void printEveryTwo(int start, int end) {
     for (int i = start; i < end; i+=2) {
-       PerfUtils::TimeTrace::getGlobalInstance()->record("User Thread is yielding...");
+       if (start == 2) PerfUtils::TimeTrace::getGlobalInstance()->record("user thread is yielding...");
        Arachne::yield();
+       if (start == 2) PerfUtils::TimeTrace::getGlobalInstance()->record("returned from yield...");
     }
     if (start == 2) {
         PerfUtils::TimeTrace::getGlobalInstance()->print();
