@@ -10,16 +10,14 @@ using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
 void printEveryTwo(int start, int end) {
-    TimeTrace *tt = TimeTrace::getGlobalInstance();
+    uint64_t startTime = Cycles::rdtsc();
     for (int i = start; i < end; i+=2) {
-       if (start == 2) tt->record("T1 Yield...");
-       else  tt->record("T2 Yield...");
-       Arachne::yield();
-       if (start == 2) tt->record("T1 Return from Yield...");
-       else tt->record("T2 Return from Yield...");
+//        printf("Yielding after %d\n", i);
+        Arachne::yield();
     }
-    if (start == 2) {
-        tt->print();
+    if (start == 1) {
+        uint64_t timePerYield = (Cycles::rdtsc() - startTime) / (end - start);
+        printf("%lu\n", Cycles::toNanoseconds(timePerYield));
     }
 }
 
@@ -27,6 +25,7 @@ int main(){
     // Initialize the library
     Arachne::threadInit();
 
+    Arachne::specialHack();
     // Add some work
     Arachne::createTask([](){ printEveryTwo(1,9999); });
     Arachne::createTask([](){ printEveryTwo(2,10000); });
@@ -35,4 +34,3 @@ int main(){
     // Must be the last call
     Arachne::mainThreadJoinPool();
 }
-
