@@ -25,7 +25,6 @@ int main(){
     // Initialize the library
     Arachne::threadInit();
 
-    Arachne::specialHack();
     // Add some work
     Arachne::createTask([](){ printEveryTwo(1,9999); });
     Arachne::createTask([](){ printEveryTwo(2,10000); });
