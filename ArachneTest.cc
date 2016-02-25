@@ -23,6 +23,7 @@ int realMain() {
             fprintf(stderr, "Thread Creation Error on i = %d\n", i);
             exit(-1);
         }
+        Arachne::yield();
     }
 
     uint64_t timePerYield = (Cycles::rdtsc() - startTime) /(NUM_THREADS - 1);
