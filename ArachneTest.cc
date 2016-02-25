@@ -11,6 +11,7 @@ using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
 void printEveryTwo(int start, int end) {
+    PerfUtils::TimeTrace::getGlobalInstance()->record("Inside thread");
 }
 
 int realMain() {
@@ -18,10 +19,11 @@ int realMain() {
 
     // Measure the thread creation overhead in the creating thread.
     for (int i = 0; i < NUM_THREADS - 1; i++) {
+        PerfUtils::TimeTrace::getGlobalInstance()->record("Begin Creation");
         Arachne::createThread(-1, printEveryTwo,1,i);
-//        PerfUtils::TimeTrace::getGlobalInstance()->record("Finish creation, before yield");
+        PerfUtils::TimeTrace::getGlobalInstance()->record("Finish creation, before yield");
         Arachne::yield();
-//        PerfUtils::TimeTrace::getGlobalInstance()->record("Return from yield");
+        PerfUtils::TimeTrace::getGlobalInstance()->record("Return from yield");
     }
 
     uint64_t timePerYield = (Cycles::rdtsc() - startTime) /(NUM_THREADS - 1);
