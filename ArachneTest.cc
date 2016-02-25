@@ -26,8 +26,8 @@ int main(){
     Arachne::threadInit();
 
     // Add some work
-    Arachne::createTask([](){ printEveryTwo(1,9999); });
-    Arachne::createTask([](){ printEveryTwo(2,10000); });
+    Arachne::createThread(-1, printEveryTwo,1,9999);
+    Arachne::createThread(-1, printEveryTwo,2,10000);
     
     fflush(stdout);
     // Must be the last call
