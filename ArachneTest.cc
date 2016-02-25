@@ -5,6 +5,7 @@
 #include "Cycles.h"
 #include "TimeTrace.h"
 
+#define NUM_THREADS 1000
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
@@ -18,11 +19,14 @@ int main(){
     uint64_t startTime = Cycles::rdtsc();
 
     // Measure the thread creation overhead in the creating thread.
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < NUM_THREADS; i++)
         Arachne::createThread(-1, printEveryTwo,1,i);
+//        Arachne::createThread([=]() {printEveryTwo(1,i);});
     
-    uint64_t timePerYield = (Cycles::rdtsc() - startTime) / 1000;
+    uint64_t timePerYield = (Cycles::rdtsc() - startTime) / NUM_THREADS;
     printf("Thread creation average time %lu\n", Cycles::toNanoseconds(timePerYield));
+
+    TimeTrace::getGlobalInstance()->print();
 
     fflush(stdout);
     // Must be the last call
