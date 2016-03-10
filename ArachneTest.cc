@@ -14,20 +14,19 @@ void printEveryTwo(int start, int end) {
     PerfUtils::TimeTrace::getGlobalInstance()->record("Inside thread");
 }
 
-int realMain() {
-    uint64_t startTime = Cycles::rdtsc();
-
-    // Measure the thread creation overhead in the creating thread.
-    for (int i = 0; i < NUM_THREADS - 1; i++) {
-        PerfUtils::TimeTrace::getGlobalInstance()->record("Begin Creation");
-        Arachne::createThread(-1, printEveryTwo,1,i);
-        PerfUtils::TimeTrace::getGlobalInstance()->record("Finish creation, before yield");
-        Arachne::yield();
-        PerfUtils::TimeTrace::getGlobalInstance()->record("Return from yield");
+void sleeper(int id, uint64_t ns) {
+    for (int i = 0; i < 1000; i++) {
+        if (id == 1) PerfUtils::TimeTrace::getGlobalInstance()->record("Going to sleep 1");
+        else PerfUtils::TimeTrace::getGlobalInstance()->record("Going to sleep 2");
+        Arachne::sleep(ns);
     }
+}
 
-    uint64_t timePerYield = (Cycles::rdtsc() - startTime) /(NUM_THREADS - 1);
-    printf("Thread creation average time %lu\n", Cycles::toNanoseconds(timePerYield));
+int realMain() {
+    Arachne::createThread(1, sleeper, 1, 1000);
+    Arachne::createThread(1, sleeper, 2, 1000);
+    // Measure the thread creation overhead in the creating thread.
+    Arachne::sleep(10000000);
     TimeTrace::getGlobalInstance()->print();
     fflush(stdout);
     return 0;
