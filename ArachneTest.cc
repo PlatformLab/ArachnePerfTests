@@ -14,24 +14,22 @@ void printEveryTwo(int start, int end) {
     PerfUtils::TimeTrace::getGlobalInstance()->record("Inside thread");
 }
 
-void sleeper(int id, uint64_t ns) {
-    for (int i = 0; i < 1000; i++) {
-        if (id == 1) PerfUtils::TimeTrace::getGlobalInstance()->record("Going to sleep 1");
-        else PerfUtils::TimeTrace::getGlobalInstance()->record("Going to sleep 2");
-        Arachne::sleep(ns);
-    }
-}
 
 int realMain() {
-    Arachne::createThread(1, sleeper, 1, 1000);
-    // Measure the thread creation overhead in the creating thread.
-    Arachne::sleep(10000000);
+    // Cross-core creation
+    for (int i = 0; i < NUM_THREADS; i++) {
+        PerfUtils::TimeTrace::getGlobalInstance()->record("A thread is about to be born!");
+        Arachne::createThread(1, printEveryTwo, 1, 1000);
+        // Delay a full microsecond before creating the next thread
+        Arachne::sleep(1000);
+    }
+
     TimeTrace::getGlobalInstance()->print();
     fflush(stdout);
     return 0;
 }
 
-int main(){
+int main() {
     // Initialize the library
     Arachne::threadInit();
     Arachne::createThread(-1, realMain);
