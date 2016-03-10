@@ -24,7 +24,6 @@ void sleeper(int id, uint64_t ns) {
 
 int realMain() {
     Arachne::createThread(1, sleeper, 1, 1000);
-    Arachne::createThread(1, sleeper, 2, 1000);
     // Measure the thread creation overhead in the creating thread.
     Arachne::sleep(10000000);
     TimeTrace::getGlobalInstance()->print();
