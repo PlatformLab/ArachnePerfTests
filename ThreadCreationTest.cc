@@ -25,10 +25,10 @@ int main(){
 
     // Measure the thread creation overhead in the creating thread.
     for (int i = 0; i < 10000; i++) {
-        TimeTrace::getGlobalInstance()->record("A thread is about to be born!");
-        std::thread t(printEveryTwo,1,i);
+        TimeTrace::getGlobalInstance()->record("Before creation");
+        std::thread(printEveryTwo,1,i).detach();
 //        pthread_setschedparam(t.native_handle(), SCHED_RR, &param);
-        t.detach();
+//        t.detach();
         usleep(100);
 //        TimeTrace::getGlobalInstance()->record("Finished usleep 20!");
     }
