@@ -12,7 +12,7 @@ using PerfUtils::TimeTrace;
 void printEveryTwo(int start, int end) {
     uint64_t startTime = Cycles::rdtsc();
     for (int i = start; i < end; i+=2) {
-        TimeTrace::getGlobalInstance()->record("Yielding after %d", i);
+        TimeTrace::getGlobalInstance()->record("Thread %d is yielding", start);
         Arachne::yield();
     }
     if (start == 2) {
