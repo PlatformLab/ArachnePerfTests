@@ -6,21 +6,24 @@
 #include <pthread.h>
 
 #include "Cycles.h"
+#include "TimeTrace.h"
 
 
 using PerfUtils::Cycles;
+using PerfUtils::TimeTrace;
 
 void printEveryTwo(int start, int end) {
-    usleep(100);
+//    usleep(100);
     uint64_t startTime = Cycles::rdtsc();
     for (int i = start; i < end; i+=2) {
-        printf("Yielding after %d\n", i);
+        TimeTrace::getGlobalInstance()->record("Thread %d is yielding", start);
         std::this_thread::yield();
     }
 
     if (start == 2) {
         uint64_t timePerYield = (Cycles::rdtsc() - startTime) / (end - start);
         printf("%lu\n", Cycles::toNanoseconds(timePerYield));
+        TimeTrace::getGlobalInstance()->print();
     }
 }
 
