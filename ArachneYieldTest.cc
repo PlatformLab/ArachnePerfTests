@@ -12,13 +12,13 @@ using PerfUtils::TimeTrace;
 void printEveryTwo(int start, int end) {
     uint64_t startTime = Cycles::rdtsc();
     for (int i = start; i < end; i+=2) {
-        TimeTrace::getGlobalInstance()->record("Thread %d is yielding", start);
+//        TimeTrace::getGlobalInstance()->record("Thread %d is yielding", start);
         Arachne::yield();
     }
     if (start == 2) {
         uint64_t timePerYield = (Cycles::rdtsc() - startTime) / (end - start);
         printf("%lu\n", Cycles::toNanoseconds(timePerYield));
-        TimeTrace::getGlobalInstance()->print();
+//        TimeTrace::getGlobalInstance()->print();
     }
 }
 
