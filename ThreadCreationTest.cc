@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sched.h>
 #include <pthread.h>
+#include <errno.h>
+#include <string.h>
 
 #include "Cycles.h"
 #include "TimeTrace.h"
@@ -21,7 +23,11 @@ void printEveryTwo(int start, int end) {
 int main(){
     struct sched_param param;
     param.sched_priority = 99;
-    sched_setscheduler(0, SCHED_RR, &param);
+    int err = sched_setscheduler(0, SCHED_RR, &param);
+    if (err) {
+        printf("Error on sched_setscheduler: %d, %s\n", err, strerror(err));
+        exit(-1);
+    }
 
     // Measure the thread creation overhead in the creating thread.
     for (int i = 0; i < 10000; i++) {
