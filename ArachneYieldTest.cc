@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <vector>
 
 #include "Arachne.h"
@@ -9,28 +10,33 @@
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
-void printEveryTwo(int start, int end) {
+void printEveryN(int start, int end, int increment) {
     uint64_t startTime = Cycles::rdtsc();
-    for (int i = start; i < end; i+=2) {
-//        TimeTrace::getGlobalInstance()->record("Thread %d is yielding", start);
+    for (int i = start; i < end; i+=increment) {
         Arachne::yield();
     }
-    if (start == 2) {
-        uint64_t timePerYield = (Cycles::rdtsc() - startTime) / (end - start);
-        printf("%lu\n", Cycles::toNanoseconds(timePerYield));
-//        TimeTrace::getGlobalInstance()->print();
-    }
+
+    uint64_t timePerYield = (Cycles::rdtsc() - startTime) / (end - start);
+    printf("%lu\n", Cycles::toNanoseconds(timePerYield));
+    fflush(stdout);
 }
 
-int main(){
+int main(int argc, char** argv){
     // Initialize the library
     Arachne::threadInit();
 
     // Add some work
-    Arachne::createThread(1, printEveryTwo, 1, 9999);
-    Arachne::createThread(1, printEveryTwo, 2, 10000);
-    
+    if (argc < 2) {
+        Arachne::createThread(0, printEveryN, 1, 9999, 2);
+        Arachne::createThread(0, printEveryN, 2, 10000, 2);
+    }
+    else {
+        int numThreads = atoi(argv[1]);
+        for (int i = 0; i < numThreads; i++)
+            Arachne::createThread(0, printEveryN,i,i+99998,numThreads);
+    }
     fflush(stdout);
+    usleep(1000000);
     // Must be the last call
-    Arachne::mainThreadJoinPool();
+//    Arachne::mainThreadJoinPool();
 }
