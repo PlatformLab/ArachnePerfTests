@@ -42,15 +42,21 @@ int main(int argc, char** argv) {
     core = sched_getcpu();
 
     if (argc < 2) {
-        std::thread(printEveryN,1,9999,2).detach();
-        std::thread(printEveryN,2,10000,2).detach();
+        std::thread a(printEveryN,1,9999,2);
+        std::thread b(printEveryN,2,10000,2);
+        a.join();
+        b.join();
     }
     else {
         int numThreads = atoi(argv[1]);
-        for (int i = 1; i < numThreads+1; i++)
-            std::thread(printEveryN,i,i+9998,numThreads).detach();
+        std::thread threadRefs[numThreads];
+        for (int i = 0; i < numThreads; i++)
+            threadRefs[i] = std::thread(printEveryN,i,i+99998,numThreads);
+
+        // Join the threads
+        for (int i = 0; i < numThreads; i++)
+            threadRefs[i].join();
     }
 
     fflush(stdout);
-    while (true);
 }
