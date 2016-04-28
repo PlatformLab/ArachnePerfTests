@@ -17,7 +17,7 @@ using PerfUtils::TimeTrace;
 using PerfUtils::Util::pinThreadToCore;
 
 int core = 0;
-void printEveryTwo(int start, int end) {
+void printEveryN(int start, int end, int increment) {
     pinThreadToCore(core);
     uint64_t startTime = Cycles::rdtsc();
     for (int i = start; i < end; i+=2) {
@@ -45,8 +45,8 @@ int main(){
     }
     core = sched_getcpu();
 
-    std::thread(printEveryTwo,1,9999).detach();
-    std::thread(printEveryTwo,2,10000).detach();
+    std::thread(printEveryN,1,9999,2).detach();
+    std::thread(printEveryN,2,10000,2).detach();
 
     fflush(stdout);
     while (true);
