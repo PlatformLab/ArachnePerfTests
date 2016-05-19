@@ -33,7 +33,7 @@ int main(int argc, char** argv){
     else {
         int numThreads = atoi(argv[1]);
         for (int i = 0; i < numThreads; i++)
-            Arachne::createThread(0, printEveryN,i,i+99998,numThreads);
+            Arachne::createThread(i % 3, printEveryN,i,i+99998,numThreads);
     }
     fflush(stdout);
     usleep(1000000);
