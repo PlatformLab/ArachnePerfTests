@@ -3,9 +3,9 @@ DEBUG=-g
 LIBS=-I../Arachne  -L../Arachne -lArachne  -I../PerfUtils -L../PerfUtils -lPerfUtils  -pthread
 CXXFLAGS=-std=c++11 -O2
 
-all: ArachneTest ThreadCreationTest GoThreadCreate ArachneYieldTest ThreadYieldTest GoThreadYield
-ArachneTest: ArachneTest.cc ../Arachne/libArachne.a
-	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneTest.cc $(LIBS) -o ArachneTest
+all: ArachneCreateTest ThreadCreationTest GoThreadCreate ArachneYieldTest ThreadYieldTest GoThreadYield
+ArachneCreateTest: ArachneCreateTest.cc ../Arachne/libArachne.a
+	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneCreateTest.cc $(LIBS) -o ArachneCreateTest
 
 ArachneYieldTest: ArachneYieldTest.cc ../Arachne/libArachne.a
 	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneYieldTest.cc $(LIBS) -o ArachneYieldTest
@@ -20,6 +20,6 @@ ThreadYieldTest: ThreadYieldTest.cc
 	go build $<
 
 clean:
-	rm -f ArachneTest ThreadCreationTest
+	rm -f ArachneCreateTest ThreadCreationTest
 
 
