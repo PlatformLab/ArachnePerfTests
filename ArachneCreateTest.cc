@@ -7,11 +7,14 @@
 
 #define NUM_THREADS 10000
 
+volatile int flag;
+
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
 void printEveryTwo(int start, int end) {
     PerfUtils::TimeTrace::getGlobalInstance()->record("Inside thread");
+    flag = 1;
 }
 
 
@@ -19,7 +22,9 @@ int realMain() {
     // Cross-core creation
     for (int i = 0; i < NUM_THREADS; i++) {
         PerfUtils::TimeTrace::getGlobalInstance()->record("A thread is about to be born!");
+        flag = 0;
         Arachne::createThread(1, printEveryTwo, 1, 1000);
+        while (!flag);
         // Delay a full microsecond before creating the next thread
         Arachne::sleep(1000);
     }
