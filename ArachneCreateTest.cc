@@ -24,6 +24,8 @@ int realMain() {
     // Cross-core creation
     void *dummy = (void*) 0x0;
     for (int i = 0; i < NUM_THREADS; i++) {
+        PerfUtils::TimeTrace::getGlobalInstance()->record("DummyTrace!");
+        PerfUtils::TimeTrace::getGlobalInstance()->record("DummyTrace2!");
         PerfUtils::TimeTrace::getGlobalInstance()->record("A thread is about to be born!");
         flag = 0;
         Arachne::createThread(1, ObjectTask, dummy);
