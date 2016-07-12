@@ -13,9 +13,9 @@ using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
 void ObjectTask(void *objectPointer) {
-    PerfUtils::TimeTrace::getGlobalInstance()->record("Inside thread");
+    PerfUtils::TimeTrace::record("Inside thread");
     objectPointer = (char*)objectPointer+1;
-    PerfUtils::TimeTrace::getGlobalInstance()->record("Incremented pointer that was passed to this thread");
+    PerfUtils::TimeTrace::record("Incremented pointer that was passed to this thread");
     flag = 1;
 }
 
@@ -24,15 +24,16 @@ int realMain() {
     // Cross-core creation
     void *dummy = (void*) 0x0;
     for (int i = 0; i < NUM_THREADS; i++) {
-        PerfUtils::TimeTrace::getGlobalInstance()->record("DummyTrace!");
-        PerfUtils::TimeTrace::getGlobalInstance()->record("DummyTrace2!");
-        PerfUtils::TimeTrace::getGlobalInstance()->record("A thread is about to be born!");
+//        PerfUtils::TimeTrace::record("DummyTrace!");
+//        PerfUtils::TimeTrace::record("DummyTrace2!");
+        PerfUtils::TimeTrace::record("A thread is about to be born!");
         flag = 0;
         Arachne::createThread(1, ObjectTask, dummy);
         while (!flag);
     }
 
-    TimeTrace::getGlobalInstance()->print();
+    TimeTrace::setOutputFileName("TimeTrace.log");
+    TimeTrace::print();
     fflush(stdout);
     return 0;
 }

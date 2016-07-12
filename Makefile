@@ -1,7 +1,7 @@
 
 DEBUG=-g
 LIBS=-I../Arachne  -L../Arachne -lArachne  -I../PerfUtils -L../PerfUtils -lPerfUtils  -pthread
-CXXFLAGS=-std=c++11 -O2
+CXXFLAGS=-std=c++11 -O3
 
 all: ArachneCreateTest ThreadCreationTest GoThreadCreate ArachneYieldTest ThreadYieldTest GoThreadYield
 ArachneCreateTest: ArachneCreateTest.cc ../Arachne/libArachne.a

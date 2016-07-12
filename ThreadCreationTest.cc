@@ -15,7 +15,7 @@ using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
 void printEveryTwo(int start, int end) {
-    TimeTrace::getGlobalInstance()->record("Inside thread");
+    TimeTrace::record("Inside thread");
 //    printf("Our scheduler: %d, SCHED_RR: %d\n", sched_getscheduler(0), SCHED_RR);
 //    fflush(stdout);
 }
@@ -31,14 +31,14 @@ int main(){
 
     // Measure the thread creation overhead in the creating thread.
     for (int i = 0; i < 10000; i++) {
-        TimeTrace::getGlobalInstance()->record("Before creation");
+        TimeTrace::record("Before creation");
         std::thread(printEveryTwo,1,i).detach();
 //        pthread_setschedparam(t.native_handle(), SCHED_RR, &param);
 //        t.detach();
         usleep(100);
-//        TimeTrace::getGlobalInstance()->record("Finished usleep 20!");
+//        TimeTrace::record("Finished usleep 20!");
     }
 
-    TimeTrace::getGlobalInstance()->print();
+    TimeTrace::print();
     fflush(stdout);
 }
