@@ -20,18 +20,17 @@ Arachne::condition_variable productIsConsumed;
 Arachne::SpinLock mutex;
 
 void producer() {
-    Arachne::sleep(15);
-	mutex.lock();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		while (flag) {
-			productIsConsumed.wait(mutex);
-		}
-        TimeTrace::record("Producer just woke up");
+		while (flag);
 		flag = 1;
+        mutex.lock();
         TimeTrace::record("Producer about to signal");
 	    productIsReady.notify_one();
+        TimeTrace::record("Producer finished signaling");
+        mutex.unlock();
+        TimeTrace::record("Producer manually unlocked");
+        Arachne::sleep(500);
 	}
-	mutex.unlock();
     printf("Producer finished\n");
     fflush(stdout);
     TimeTrace::setOutputFileName("CVTrace.log");
@@ -46,8 +45,6 @@ void consumer() {
 		}
         TimeTrace::record("Consumer just woke up");
 		flag = 0;
-        TimeTrace::record("Consumer about to signal");
-		productIsConsumed.notify_one();
 	}
 	mutex.unlock();
     printf("Consumer finished\n");
