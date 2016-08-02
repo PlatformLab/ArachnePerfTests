@@ -23,6 +23,6 @@ ThreadYieldTest: ThreadYieldTest.cc
 	go build $<
 
 clean:
-	rm -f ArachneCreateTest ThreadCreationTest
+	rm -f ArachneCreateTest ThreadCreationTest ArachneYieldTest ArachneCVTest
 
 
