@@ -15,9 +15,15 @@ using PerfUtils::TimeTrace;
 #define NUM_ITERATIONS 10000
 
 volatile int flag = 0;
+
 Arachne::condition_variable productIsReady;
 Arachne::condition_variable productIsConsumed;
 Arachne::SpinLock mutex;
+
+// Used for filling up the run queue
+char separator[Arachne::CACHE_LINE_SIZE];
+Arachne::condition_variable blockForever;
+volatile int creationFlag;
 
 void producer() {
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
@@ -51,13 +57,29 @@ void consumer() {
     fflush(stdout);
 }
 
+void sleeper() {
+    creationFlag = 0;
+	mutex.lock();
+    blockForever.wait(mutex);
+}
+
 int main(int argc, char** argv){
+    int threadListLength = 0;
+    if (argc > 1) threadListLength = atoi(argv[1]);
     // Initialize the library
     Arachne::threadInit();
+
+    // Add a bunch of threads to the run list that will never get to run again.
+    for (int i = 0; i < threadListLength; i++) {
+        Arachne::createThread(1, sleeper);
+        creationFlag = 1;     
+        while (creationFlag);
+    }
 
     // Add some work
 	Arachne::createThread(0, producer);
 	Arachne::createThread(1, consumer);
+    printf("Created Producer and consumer threads\n");
     fflush(stdout);
     // Must be the last call
     Arachne::mainThreadJoinPool();
