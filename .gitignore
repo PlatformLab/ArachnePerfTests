@@ -1,3 +1,6 @@
 ArachneYieldTest
 ThreadYieldTest
 GoThreadYield
+ArachneCVTest
+ArachneCreateTest
+*.err
