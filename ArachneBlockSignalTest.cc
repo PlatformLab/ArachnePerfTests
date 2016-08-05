@@ -6,6 +6,7 @@
 #include "Condition.h"
 #include "Cycles.h"
 #include "TimeTrace.h"
+#include "Util.h"
 
 
 using PerfUtils::Cycles;
@@ -20,7 +21,7 @@ volatile int flag = 0;
 volatile int creationFlag;
 
 // This is used for signalling
-volatile Arachne::thread_id consumerId;
+volatile Arachne::ThreadId consumerId;
 
 // TODO(hq6): Fix this test to test the block and signal stuff
 // Need to make sure fully blocked before signalling for this test.
@@ -43,8 +44,9 @@ void consumer() {
     consumerId = Arachne::getThreadId();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (flag);
-        Arachne::set_blocking_state();
+        Arachne::setBlockingState();
 		flag = 1;
+        TimeTrace::record("Consumer about to block");
         Arachne::block();
         TimeTrace::record("Consumer just woke up");
 	}
@@ -54,7 +56,7 @@ void consumer() {
 
 void sleeper() {
     creationFlag = 0;
-    Arachne::set_blocking_state();
+    Arachne::setBlockingState();
     Arachne::block();
 }
 
