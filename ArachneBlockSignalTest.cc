@@ -23,8 +23,6 @@ volatile int creationFlag;
 // This is used for signalling
 volatile Arachne::ThreadId consumerId;
 
-// TODO(hq6): Fix this test to test the block and signal stuff
-// Need to make sure fully blocked before signalling for this test.
 void producer() {
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (!flag);
@@ -44,7 +42,6 @@ void consumer() {
     consumerId = Arachne::getThreadId();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (flag);
-        Arachne::setBlockingState();
 		flag = 1;
         TimeTrace::record("Consumer about to block");
         Arachne::block();
@@ -56,7 +53,6 @@ void consumer() {
 
 void sleeper() {
     creationFlag = 0;
-    Arachne::setBlockingState();
     Arachne::block();
 }
 

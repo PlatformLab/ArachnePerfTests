@@ -29,7 +29,6 @@ int realMain(int argc, char** argv) {
     mainThreadId = Arachne::getThreadId();
     // Add some work
     if (argc < 2) {
-        Arachne::setBlockingState();
         Arachne::createThread(0, printEveryN, 1, 99999, 2);
         Arachne::block();
         Arachne::createThread(0, printEveryN, 2, 100000, 2);
