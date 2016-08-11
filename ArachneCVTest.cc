@@ -26,6 +26,7 @@ Arachne::condition_variable blockForever;
 volatile int creationFlag;
 
 void producer() {
+    printf("producerId = %p\n", Arachne::getThreadId());
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (flag);
 		flag = 1;
@@ -44,6 +45,7 @@ void producer() {
 }
 
 void consumer() {
+    printf("ConsumerId = %p\n", Arachne::getThreadId());
 	mutex.lock();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (!flag) {

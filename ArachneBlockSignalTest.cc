@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <vector>
+#include <atomic>
 
 #include "Arachne.h"
 #include "Condition.h"
@@ -15,7 +16,7 @@ using PerfUtils::TimeTrace;
 
 #define NUM_ITERATIONS 10000
 
-volatile int flag = 0;
+volatile int flag;
 
 // Used for filling up the run queue
 volatile int creationFlag;
@@ -24,13 +25,15 @@ volatile int creationFlag;
 volatile Arachne::ThreadId consumerId;
 
 void producer() {
+
+    printf("producerId = %p\n", Arachne::getThreadId());
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (!flag);
 		flag = 0;
         TimeTrace::record("Producer about to signal");
         Arachne::signal(consumerId); 
         TimeTrace::record("Producer finished signaling");
-        Arachne::sleep(500);
+        Arachne::yield();
 	}
     printf("Producer finished\n");
     fflush(stdout);
@@ -40,10 +43,10 @@ void producer() {
 
 void consumer() {
     consumerId = Arachne::getThreadId();
+    printf("ConsumerId = %p\n", consumerId);
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (flag);
 		flag = 1;
-        TimeTrace::record("Consumer about to block");
         Arachne::block();
         TimeTrace::record("Consumer just woke up");
 	}
@@ -70,8 +73,9 @@ int main(int argc, char** argv){
     }
 
     // Add some work
-	Arachne::createThread(0, producer);
 	Arachne::createThread(1, consumer);
+    sleep(1);
+	Arachne::createThread(0, producer);
     printf("Created Producer and consumer threads\n");
     fflush(stdout);
     // Must be the last call
