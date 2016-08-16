@@ -3,4 +3,8 @@ ThreadYieldTest
 GoThreadYield
 ArachneCVTest
 ArachneCreateTest
+ArachneBlockSignalTest
 *.err
+*.asm
+*.dat
+*.patch
