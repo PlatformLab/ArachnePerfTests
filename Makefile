@@ -4,18 +4,24 @@ LIBS=-I../Arachne  -L../Arachne -lArachne  -I../PerfUtils -L../PerfUtils -lPerfU
 CXXFLAGS=-std=c++11 -O3
 
 all: ArachneCreateTest ThreadCreationTest GoThreadCreate ArachneYieldTest \
-		ArachneCVTest ThreadYieldTest GoThreadYield ArachneBlockSignalTest
+		ArachneCVTest ThreadYieldTest GoThreadYield ArachneBlockSignalTest \
+		ArachneBlockSignal_ContextSwitch
+
 ArachneCreateTest: ArachneCreateTest.cc ../Arachne/libArachne.a
 	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneCreateTest.cc $(LIBS) -o ArachneCreateTest
 
 ArachneBlockSignalTest: ArachneBlockSignalTest.cc ../Arachne/libArachne.a
 	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneBlockSignalTest.cc $(LIBS) -o ArachneBlockSignalTest
 
+ArachneBlockSignal_ContextSwitch: ArachneBlockSignal_ContextSwitch.cc ../Arachne/libArachne.a
+	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneBlockSignal_ContextSwitch.cc $(LIBS) -o ArachneBlockSignal_ContextSwitch
+
 ArachneYieldTest: ArachneYieldTest.cc ../Arachne/libArachne.a
 	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneYieldTest.cc $(LIBS) -o ArachneYieldTest
 
 ArachneCVTest: ArachneCVTest.cc ../Arachne/libArachne.a
 	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneCVTest.cc $(LIBS) -o ArachneCVTest
+
 
 ThreadCreationTest: ThreadCreationTest.cc
 	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ThreadCreationTest.cc $(LIBS) -o ThreadCreationTest

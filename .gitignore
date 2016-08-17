@@ -4,6 +4,7 @@ GoThreadYield
 ArachneCVTest
 ArachneCreateTest
 ArachneBlockSignalTest
+ArachneBlockSignal_ContextSwitch
 *.err
 *.asm
 *.dat
