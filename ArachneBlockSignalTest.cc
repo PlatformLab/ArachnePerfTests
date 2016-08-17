@@ -74,7 +74,6 @@ int main(int argc, char** argv){
 
     // Add some work
 	Arachne::createThread(1, consumer);
-    sleep(1);
 	Arachne::createThread(0, producer);
     printf("Created Producer and consumer threads\n");
     fflush(stdout);
