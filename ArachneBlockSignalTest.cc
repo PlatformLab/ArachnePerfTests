@@ -47,6 +47,7 @@ void consumer() {
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (flag);
 		flag = 1;
+        TimeTrace::record("Consumer just blocked");
         Arachne::block();
         TimeTrace::record("Consumer just woke up");
 	}
