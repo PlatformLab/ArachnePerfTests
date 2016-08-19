@@ -21,9 +21,10 @@ volatile int creationFlag;
 
 
 void producer(Arachne::ThreadId *tids, int numTids, volatile int *flags) {
-    printf("producerId = %p\n", Arachne::getThreadId());
+//    printf("producerId = %p\n", Arachne::getThreadId());
     Arachne::signal(tids[0]); 
     Arachne::signal(tids[1]); 
+    Arachne::signal(tids[2]); 
 
     printf("flags in producer = %p\n", flags);
 
@@ -31,7 +32,8 @@ void producer(Arachne::ThreadId *tids, int numTids, volatile int *flags) {
         int index = i % numTids;
 		while (!flags[index]);
 		flags[index] = 0;
-        int nextIndex = (i+1) % numTids;
+        int nextIndex = index + 1;
+        if (nextIndex == numTids) nextIndex = 0;
 //        printf("Producer about to signal %d\n", nextIndex);
         TimeTrace::record("Producer about to signal %x", nextIndex);
         Arachne::signal(tids[nextIndex]); 
@@ -94,7 +96,7 @@ int main(int argc, char** argv){
     // DONE: It appears that my threading library has the same quirk with reference parameters that std::thread has, and also the same solution.
     // http://stackoverflow.com/questions/21048906/stdthread-pass-by-reference-calls-copy-constructor
     Arachne::ThreadId tids[2];
-    volatile int flags[2] = {0}; // Initialized to 0, let consumers go first.
+    volatile int flags[3] = {0}; // Initialized to 0, let consumers go first.
     printf("flags in the original stack = %p\n", flags);
 
     creationFlag = 1;     
@@ -103,8 +105,11 @@ int main(int argc, char** argv){
     creationFlag = 1;     
 	Arachne::createThread(1, consumer, std::ref(tids[1]), 1, flags + 1);
     while (creationFlag);
+    creationFlag = 1;     
+	Arachne::createThread(1, consumer, std::ref(tids[2]), 2, flags + 2);
+    while (creationFlag);
     sleep(1);
-	Arachne::createThread(0, producer, tids, 2, flags);
+	Arachne::createThread(0, producer, tids, 3, flags);
 
     printf("Created Producer and consumer threads\n");
     fflush(stdout);
