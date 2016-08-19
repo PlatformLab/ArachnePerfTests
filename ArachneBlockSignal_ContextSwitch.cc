@@ -15,16 +15,16 @@ using PerfUtils::TimeTrace;
 
 
 #define NUM_ITERATIONS 10000
+#define NUM_THREADS_IN_CYCLE 5
 
 // Used for filling up the run queue
 volatile int creationFlag;
 
 
 void producer(Arachne::ThreadId *tids, int numTids, volatile int *flags) {
-//    printf("producerId = %p\n", Arachne::getThreadId());
-    Arachne::signal(tids[0]); 
-    Arachne::signal(tids[1]); 
-    Arachne::signal(tids[2]); 
+    printf("producerId = %p\n", Arachne::getThreadId());
+    for (int i = 0; i < numTids; i++)
+        Arachne::signal(tids[i]); 
 
     printf("flags in producer = %p\n", flags);
 
@@ -79,37 +79,27 @@ int main(int argc, char** argv){
 
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++) {
-        creationFlag = 1;     
+        creationFlag = 1;
         Arachne::createThread(1, sleeper);
         while (creationFlag);
     }
 
-    // Add some work
-    // This is used for signalling
-    // TODO: Why is the that is declared second always nil?
-    // There seems to be something wrong with the assignment of references.
-    // It seems that passing references does not work in the expected way with
-    // my parameter passing.
-    // Reference parameters are passed almost entirely incorrectly, and it
-    // seems we may be overwriting arbitrary memory instead of of the things we
-    // meant to pass.
-    // DONE: It appears that my threading library has the same quirk with reference parameters that std::thread has, and also the same solution.
-    // http://stackoverflow.com/questions/21048906/stdthread-pass-by-reference-calls-copy-constructor
-    Arachne::ThreadId tids[2];
-    volatile int flags[3] = {0}; // Initialized to 0, let consumers go first.
+    Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
+
+    // Initialized to 0, let consumers go first.
+    volatile int flags[NUM_THREADS_IN_CYCLE] = {0}; 
     printf("flags in the original stack = %p\n", flags);
 
-    creationFlag = 1;     
-	Arachne::createThread(1, consumer, std::ref(tids[0]), 0, flags);
-    while (creationFlag);
-    creationFlag = 1;     
-	Arachne::createThread(1, consumer, std::ref(tids[1]), 1, flags + 1);
-    while (creationFlag);
-    creationFlag = 1;     
-	Arachne::createThread(1, consumer, std::ref(tids[2]), 2, flags + 2);
-    while (creationFlag);
+    for (int i = 0; i < NUM_THREADS_IN_CYCLE; i++) {
+        creationFlag = 1;     
+        // It appears that my threading library has the same quirk with reference
+        // parameters that std::thread has, and also the same solution: std::ref.
+        // http://stackoverflow.com/questions/21048906/stdthread-pass-by-reference-calls-copy-constructor
+        Arachne::createThread(1, consumer, std::ref(tids[i]), i, flags + i);
+        while (creationFlag);
+    }
     sleep(1);
-	Arachne::createThread(0, producer, tids, 3, flags);
+	Arachne::createThread(0, producer, tids, NUM_THREADS_IN_CYCLE, flags);
 
     printf("Created Producer and consumer threads\n");
     fflush(stdout);
