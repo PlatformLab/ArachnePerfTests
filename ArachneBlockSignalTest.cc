@@ -16,7 +16,7 @@ using PerfUtils::TimeTrace;
 
 #define NUM_ITERATIONS 10000
 
-volatile int flag;
+volatile int consumerIsReady = 1;
 
 // Used for filling up the run queue
 volatile int creationFlag;
@@ -28,12 +28,11 @@ void producer() {
 
     printf("producerId = %p\n", Arachne::getThreadId());
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		while (!flag);
-		flag = 0;
+		while (!consumerIsReady);
+		consumerIsReady = 0;
         TimeTrace::record("Producer about to signal");
         Arachne::signal(consumerId); 
         TimeTrace::record("Producer finished signaling");
-        Arachne::yield();
 	}
     printf("Producer finished\n");
     fflush(stdout);
@@ -45,11 +44,11 @@ void consumer() {
     consumerId = Arachne::getThreadId();
     printf("ConsumerId = %p\n", consumerId);
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		while (flag);
-		flag = 1;
-        TimeTrace::record("Consumer just blocked");
+        TimeTrace::record("Consumer about to block");
         Arachne::block();
         TimeTrace::record("Consumer just woke up");
+        while (consumerIsReady);
+		consumerIsReady = 1;
 	}
     printf("Consumer finished\n");
     fflush(stdout);
