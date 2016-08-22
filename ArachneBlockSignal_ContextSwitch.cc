@@ -21,20 +21,18 @@ using PerfUtils::TimeTrace;
 volatile int creationFlag;
 
 Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
-// Initialized to 0, let consumers go first.
-volatile int flags[NUM_THREADS_IN_CYCLE] = {0};
+
+// Initialized to 1, since we create consumers first.
+volatile int consumerIsReady = 1;
 
 void producer() {
 	for (int i = 0; i < NUM_ITERATIONS*NUM_THREADS_IN_CYCLE; i++) {
         int index = i % NUM_THREADS_IN_CYCLE;
-        int nextIndex = index + 1;
-        if (nextIndex == NUM_THREADS_IN_CYCLE) nextIndex = 0;
-		while (!flags[index]);
-		flags[index] = 0;
-        TimeTrace::record("Producer about to signal %x", nextIndex);
-        Arachne::signal(tids[nextIndex]); 
-        TimeTrace::record("Producer finished signaling %x", nextIndex);
-        Arachne::sleep(200);
+		while (!consumerIsReady);
+		consumerIsReady = 0;
+        TimeTrace::record("Producer about to signal %x", index);
+        Arachne::signal(tids[index]);
+        TimeTrace::record("Producer finished signaling %x", index);
 	}
     printf("Producer finished\n");
     fflush(stdout);
@@ -44,13 +42,11 @@ void producer() {
 
 void consumer(int cid) {
     tids[cid] = Arachne::getThreadId();
-     __asm__ __volatile__("sfence" ::: "memory");
     creationFlag = 0;
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		while (flags[cid]);
-		flags[cid] = 1;
         Arachne::block();
         TimeTrace::record("Consumer just woke up %x", cid);
+		consumerIsReady = 1;
 	}
     printf("Consumer %d finished\n", cid);
     fflush(stdout);
