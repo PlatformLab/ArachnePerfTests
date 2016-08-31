@@ -3,25 +3,19 @@ DEBUG=-g
 LIBS=-I../Arachne  -L../Arachne -lArachne  -I../PerfUtils -L../PerfUtils -lPerfUtils  -pthread
 CXXFLAGS=-std=c++11 -O3
 
-all: ArachneCreateTest ThreadCreationTest GoThreadCreate ArachneYieldTest \
-		ArachneCVTest ThreadYieldTest GoThreadYield ArachneBlockSignalTest \
+BINS = ArachneCreateTest  ArachneYieldTest ArachneCVTest   ArachneBlockSignalTest \
 		ArachneBlockSignal_ContextSwitchTest
+all: $(BINS) ThreadCreationTest GoThreadCreate ThreadYieldTest GoThreadYield
 
-ArachneCreateTest: ArachneCreateTest.cc ../Arachne/libArachne.a
-	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneCreateTest.cc $(LIBS) -o ArachneCreateTest
+################################################################################
+# Arachne Targets
 
-ArachneBlockSignalTest: ArachneBlockSignalTest.cc ../Arachne/libArachne.a
-	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneBlockSignalTest.cc $(LIBS) -o ArachneBlockSignalTest
+$(BINS) : % : %.cc ../Arachne/libArachne.a
+	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  $< $(LIBS) -o $@
 
-ArachneBlockSignal_ContextSwitchTest: ArachneBlockSignal_ContextSwitchTest.cc ../Arachne/libArachne.a
-	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneBlockSignal_ContextSwitchTest.cc $(LIBS) -o ArachneBlockSignal_ContextSwitchTest
 
-ArachneYieldTest: ArachneYieldTest.cc ../Arachne/libArachne.a
-	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneYieldTest.cc $(LIBS) -o ArachneYieldTest
-
-ArachneCVTest: ArachneCVTest.cc ../Arachne/libArachne.a
-	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ArachneCVTest.cc $(LIBS) -o ArachneCVTest
-
+################################################################################
+# Non-Arachne Targets
 
 ThreadCreationTest: ThreadCreationTest.cc
 	g++ -Wall -Werror $(DEBUG) $(CXXFLAGS)  ThreadCreationTest.cc $(LIBS) -o ThreadCreationTest
@@ -33,4 +27,4 @@ ThreadYieldTest: ThreadYieldTest.cc
 	go build $<
 
 clean:
-	rm -f ArachneCreateTest ThreadCreationTest ArachneYieldTest ArachneCVTest ArachneBlockSignalTest
+	rm -f ArachneCreateTest ThreadCreationTest ArachneYieldTest ArachneCVTest ArachneBlockSignalTest ArachneBlockSignal_ContextSwitch
