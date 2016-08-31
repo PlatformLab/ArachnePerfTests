@@ -11,16 +11,10 @@ using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
 // Used for filling up the run queue
-volatile int creationFlag = 0;
 
-volatile Arachne::ThreadId tids[2];
 
 void printEveryN(int start, int end, int increment) {
     printf("start = %d\n", start);
-
-    tids[start] = Arachne::getThreadId();
-    creationFlag = 0;
-    Arachne::block();
     uint64_t startTime = Cycles::rdtsc();
     for (int i = start; i < end; i+=increment) {
         Arachne::yield();
@@ -34,16 +28,8 @@ void printEveryN(int start, int end, int increment) {
 
 int realMain(int argc, char** argv) {
     // Add some work
-    creationFlag = 1;     
     Arachne::createThread(0, printEveryN, 0, 99999, 2);
-    while (creationFlag);
-
-    creationFlag = 1;     
     Arachne::createThread(0, printEveryN, 1, 100000, 2);
-    while (creationFlag);
-
-    Arachne::signal(tids[0]);
-    Arachne::signal(tids[1]);
     return 0;
 }
 
