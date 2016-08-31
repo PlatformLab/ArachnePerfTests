@@ -23,8 +23,8 @@ volatile int consumerIsReady = 1;
 volatile Arachne::ThreadId consumerId;
 
 void producer() {
-
     printf("producerId = %p\n", Arachne::getThreadId());
+    while (!consumerId);
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (!consumerIsReady);
 		consumerIsReady = 0;
