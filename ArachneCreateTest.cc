@@ -32,7 +32,7 @@ int realMain() {
         while (!flag);
     }
 
-    TimeTrace::setOutputFileName("TimeTrace.log");
+    TimeTrace::setOutputFileName("Create.log");
     TimeTrace::print();
     fflush(stdout);
     return 0;

@@ -40,7 +40,7 @@ void producer() {
 	}
     printf("Producer finished\n");
     fflush(stdout);
-    TimeTrace::setOutputFileName("CVTrace.log");
+    TimeTrace::setOutputFileName("CV.log");
     TimeTrace::print();
 }
 

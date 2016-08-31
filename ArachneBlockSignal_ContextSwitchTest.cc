@@ -36,7 +36,7 @@ void producer() {
 	}
     printf("Producer finished\n");
     fflush(stdout);
-    TimeTrace::setOutputFileName("BlockSignalWithSwap.log");
+    TimeTrace::setOutputFileName("BlockSignal_ContextSwitch.log");
     TimeTrace::print();
 }
 
