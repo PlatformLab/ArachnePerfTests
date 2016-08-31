@@ -10,10 +10,17 @@
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
-Arachne::ThreadId mainThreadId;
+// Used for filling up the run queue
+volatile int creationFlag = 0;
+
+volatile Arachne::ThreadId tids[2];
 
 void printEveryN(int start, int end, int increment) {
-    Arachne::signal(mainThreadId);
+    printf("start = %d\n", start);
+
+    tids[start] = Arachne::getThreadId();
+    creationFlag = 0;
+    Arachne::block();
     uint64_t startTime = Cycles::rdtsc();
     for (int i = start; i < end; i+=increment) {
         Arachne::yield();
@@ -26,18 +33,17 @@ void printEveryN(int start, int end, int increment) {
 }
 
 int realMain(int argc, char** argv) {
-    mainThreadId = Arachne::getThreadId();
     // Add some work
-    if (argc < 2) {
-        Arachne::createThread(0, printEveryN, 1, 99999, 2);
-        Arachne::block();
-        Arachne::createThread(0, printEveryN, 2, 100000, 2);
-    }
-    else {
-        int numThreads = atoi(argv[1]);
-        for (int i = 0; i < numThreads; i++)
-            Arachne::createThread(i % 3, printEveryN,i,i+99998,numThreads);
-    }
+    creationFlag = 1;     
+    Arachne::createThread(0, printEveryN, 0, 99999, 2);
+    while (creationFlag);
+
+    creationFlag = 1;     
+    Arachne::createThread(0, printEveryN, 1, 100000, 2);
+    while (creationFlag);
+
+    Arachne::signal(tids[0]);
+    Arachne::signal(tids[1]);
     return 0;
 }
 
