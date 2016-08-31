@@ -18,8 +18,6 @@ using PerfUtils::TimeTrace;
 
 volatile int consumerIsReady = 1;
 
-// Used for filling up the run queue
-volatile int creationFlag;
 
 // This is used for signalling
 volatile Arachne::ThreadId consumerId;
@@ -55,7 +53,6 @@ void consumer() {
 }
 
 void sleeper() {
-    creationFlag = 0;
     Arachne::block();
 }
 
@@ -68,8 +65,6 @@ int main(int argc, char** argv){
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++) {
         Arachne::createThread(1, sleeper);
-        creationFlag = 1;     
-        while (creationFlag);
     }
 
     // Add some work

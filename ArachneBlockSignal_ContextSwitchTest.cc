@@ -17,8 +17,6 @@ using PerfUtils::TimeTrace;
 #define NUM_ITERATIONS 10000
 #define NUM_THREADS_IN_CYCLE 1
 
-// Used for filling up the run queue
-volatile int creationFlag;
 
 Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
 
@@ -42,7 +40,6 @@ void producer() {
 
 void consumer(int cid) {
     tids[cid] = Arachne::getThreadId();
-    creationFlag = 0;
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         Arachne::block();
         TimeTrace::record("Consumer just woke up %x", cid);
@@ -53,7 +50,6 @@ void consumer(int cid) {
 }
 
 void sleeper() {
-    creationFlag = 0;
     Arachne::block();
 }
 
@@ -65,15 +61,11 @@ int main(int argc, char** argv){
 
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++) {
-        creationFlag = 1;
         Arachne::createThread(1, sleeper);
-        while (creationFlag);
     }
 
     for (int i = 0; i < NUM_THREADS_IN_CYCLE; i++) {
-        creationFlag = 1;     
         Arachne::createThread(1, consumer,  i);
-        while (creationFlag);
     }
 	Arachne::createThread(0, producer);
 

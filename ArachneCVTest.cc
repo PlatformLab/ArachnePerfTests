@@ -22,8 +22,6 @@ Arachne::SpinLock mutex;
 
 // Used for filling up the run queue
 char separator[Arachne::CACHE_LINE_SIZE];
-Arachne::condition_variable blockForever;
-volatile int creationFlag;
 
 void producer() {
     printf("producerId = %p\n", Arachne::getThreadId());
@@ -60,9 +58,7 @@ void consumer() {
 }
 
 void sleeper() {
-    creationFlag = 0;
-	mutex.lock();
-    blockForever.wait(mutex);
+    Arachne::block();
 }
 
 int main(int argc, char** argv){
@@ -74,8 +70,6 @@ int main(int argc, char** argv){
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++) {
         Arachne::createThread(1, sleeper);
-        creationFlag = 1;     
-        while (creationFlag);
     }
 
     // Add some work
