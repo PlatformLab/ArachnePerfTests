@@ -24,16 +24,15 @@ int realMain() {
     // Cross-core creation
     void *dummy = (void*) 0x0;
     for (int i = 0; i < NUM_THREADS; i++) {
-//        PerfUtils::TimeTrace::record("DummyTrace!");
-//        PerfUtils::TimeTrace::record("DummyTrace2!");
-        PerfUtils::TimeTrace::record("A thread is about to be born!");
         flag = 0;
-        Arachne::createThread(1, ObjectTask, dummy);
-        while (!flag);
+        PerfUtils::TimeTrace::record("A thread is about to be born!");
+        Arachne::createThread(-1, ObjectTask, dummy);
+        while (!flag) Arachne::yield();
     }
 
     TimeTrace::setOutputFileName("Create.log");
     TimeTrace::print();
+    printf("Creation Test Complete\n");
     fflush(stdout);
     return 0;
 }
