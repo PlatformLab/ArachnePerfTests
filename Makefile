@@ -27,4 +27,4 @@ ThreadYieldTest: ThreadYieldTest.cc
 	go build $<
 
 clean:
-	rm -f ArachneCreateTest ThreadCreationTest ArachneYieldTest ArachneCVTest ArachneBlockSignalTest ArachneBlockSignal_ContextSwitch
+	rm -f ArachneCreateTest ThreadCreationTest ArachneYieldTest ArachneCVTest ArachneBlockSignalTest ArachneBlockSignal_ContextSwitchTest

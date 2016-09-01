@@ -15,10 +15,10 @@ using PerfUtils::TimeTrace;
 
 
 #define NUM_ITERATIONS 10000
-#define NUM_THREADS_IN_CYCLE 1
+#define NUM_THREADS_IN_CYCLE 2
 
 
-Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
+volatile Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
 
 // Initialized to 1, since we create consumers first.
 volatile int consumerIsReady = 1;
@@ -50,20 +50,9 @@ void consumer(int cid) {
     fflush(stdout);
 }
 
-void sleeper() {
-    Arachne::block();
-}
-
 int main(int argc, char** argv){
-    int threadListLength = 0;
-    if (argc > 1) threadListLength = atoi(argv[1]);
     // Initialize the library
     Arachne::threadInit();
-
-    // Add a bunch of threads to the run list that will never get to run again.
-    for (int i = 0; i < threadListLength; i++) {
-        Arachne::createThread(1, sleeper);
-    }
 
     for (int i = 0; i < NUM_THREADS_IN_CYCLE; i++) {
         Arachne::createThread(1, consumer,  i);
