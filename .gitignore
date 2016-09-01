@@ -5,6 +5,7 @@ ArachneCVTest
 ArachneCreateTest
 ArachneBlockSignalTest
 ArachneBlockSignal_ContextSwitchTest
+ArachneTripleYieldTest
 *.err
 *.asm
 *.dat

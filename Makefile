@@ -4,7 +4,7 @@ LIBS=-I../Arachne  -L../Arachne -lArachne  -I../PerfUtils -L../PerfUtils -lPerfU
 CXXFLAGS=-std=c++11 -O3
 
 BINS = ArachneCreateTest  ArachneYieldTest ArachneCVTest   ArachneBlockSignalTest \
-		ArachneBlockSignal_ContextSwitchTest
+		ArachneBlockSignal_ContextSwitchTest ArachneTripleYieldTest
 all: $(BINS) ThreadCreationTest GoThreadCreate ThreadYieldTest GoThreadYield
 
 ################################################################################
