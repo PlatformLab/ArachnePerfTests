@@ -14,27 +14,23 @@ using PerfUtils::TimeTrace;
 
 #define NUM_ITERATIONS 10000
 
-volatile int flag = 0;
 
 Arachne::condition_variable productIsReady;
-Arachne::condition_variable productIsConsumed;
 Arachne::SpinLock mutex;
 
-// Used for filling up the run queue
-char separator[Arachne::CACHE_LINE_SIZE];
+volatile Arachne::ThreadId producerId;
 
 void producer() {
-    printf("producerId = %p\n", Arachne::getThreadId());
+    producerId = Arachne::getThreadId();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		while (flag);
-		flag = 1;
+        Arachne::block();
+        Arachne::sleep(500);
         mutex.lock();
         TimeTrace::record("Producer about to signal");
 	    productIsReady.notify_one();
         TimeTrace::record("Producer finished signaling");
         mutex.unlock();
         TimeTrace::record("Producer manually unlocked");
-        Arachne::sleep(500);
 	}
     printf("Producer finished\n");
     fflush(stdout);
@@ -44,13 +40,13 @@ void producer() {
 
 void consumer() {
     printf("ConsumerId = %p\n", Arachne::getThreadId());
+    while (!producerId);
+
 	mutex.lock();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		while (!flag) {
-			productIsReady.wait(mutex);
-		}
+        Arachne::signal(producerId);
+        productIsReady.wait(mutex);
         TimeTrace::record("Consumer just woke up");
-		flag = 0;
 	}
 	mutex.unlock();
     printf("Consumer finished\n");
