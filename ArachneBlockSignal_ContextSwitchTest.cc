@@ -24,6 +24,7 @@ Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
 volatile int consumerIsReady = 1;
 
 void producer() {
+    while (!tids[NUM_THREADS_IN_CYCLE - 1]);
 	for (int i = 0; i < NUM_ITERATIONS*NUM_THREADS_IN_CYCLE; i++) {
         int index = i % NUM_THREADS_IN_CYCLE;
 		while (!consumerIsReady);
