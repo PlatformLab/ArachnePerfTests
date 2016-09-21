@@ -10,3 +10,4 @@ ArachneTripleYieldTest
 *.asm
 *.dat
 *.patch
+.gdb_history
