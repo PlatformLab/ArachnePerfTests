@@ -5,7 +5,8 @@ CXXFLAGS=-std=c++11 -O3
 
 BINS = ArachneCreateTest  ArachneYieldTest ArachneCVTest   ArachneBlockSignalTest \
 		ArachneBlockSignal_ContextSwitchTest ArachneTripleYieldTest
-all: $(BINS) ThreadCreationTest GoThreadCreate ThreadYieldTest GoThreadYield
+EXTRAS = ThreadCreationTest GoThreadCreate ThreadYieldTest GoThreadYield
+all: $(BINS) $(EXTRAS)
 
 ################################################################################
 # Arachne Targets
@@ -27,4 +28,4 @@ ThreadYieldTest: ThreadYieldTest.cc
 	go build $<
 
 clean:
-	rm -f ArachneCreateTest ThreadCreationTest ArachneYieldTest ArachneCVTest ArachneBlockSignalTest ArachneBlockSignal_ContextSwitchTest
+	rm -f $(BINS) $(EXTRAS)
