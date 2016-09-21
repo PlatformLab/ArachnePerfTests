@@ -26,7 +26,7 @@ int realMain() {
     for (int i = 0; i < NUM_THREADS; i++) {
         flag = 0;
         PerfUtils::TimeTrace::record("A thread is about to be born!");
-        Arachne::createThread(-1, ObjectTask, dummy);
+        Arachne::createThread(ObjectTask, dummy);
         while (!flag) Arachne::yield();
     }
 
