@@ -15,7 +15,7 @@ using PerfUtils::TimeTrace;
 #define NUM_ITERATIONS 10000
 
 
-Arachne::condition_variable productIsReady;
+Arachne::ConditionVariable productIsReady;
 Arachne::SpinLock mutex;
 
 volatile Arachne::ThreadId producerId;
