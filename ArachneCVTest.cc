@@ -27,7 +27,7 @@ void producer() {
         Arachne::sleep(500);
         mutex.lock();
         TimeTrace::record("Producer about to signal");
-	    productIsReady.notify_one();
+	    productIsReady.notifyOne();
         TimeTrace::record("Producer finished signaling");
         mutex.unlock();
         TimeTrace::record("Producer manually unlocked");
