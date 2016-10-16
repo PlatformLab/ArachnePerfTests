@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "SpinLock.h"
+#include "Arachne.h"
 #include "Cycles.h"
 
 using Arachne::SpinLock;

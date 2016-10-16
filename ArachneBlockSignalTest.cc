@@ -4,7 +4,6 @@
 #include <atomic>
 
 #include "Arachne.h"
-#include "Condition.h"
 #include "Cycles.h"
 #include "TimeTrace.h"
 #include "Util.h"
@@ -20,11 +19,9 @@ volatile int consumerIsReady = 1;
 
 
 // This is used for signalling
-volatile Arachne::ThreadId consumerId;
+Arachne::ThreadId consumerId;
 
 void producer() {
-    printf("producerId = %p\n", Arachne::getThreadId());
-    while (!consumerId);
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (!consumerIsReady);
 		consumerIsReady = 0;
@@ -39,8 +36,6 @@ void producer() {
 }
 
 void consumer() {
-    consumerId = Arachne::getThreadId();
-    printf("ConsumerId = %p\n", consumerId);
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         TimeTrace::record("Consumer about to block");
         Arachne::block();
@@ -68,7 +63,7 @@ int main(int argc, char** argv){
     }
 
     // Add some work
-	Arachne::createThread(1, consumer);
+	consumerId = Arachne::createThread(1, consumer);
 	Arachne::createThread(0, producer);
     printf("Created Producer and consumer threads\n");
     fflush(stdout);

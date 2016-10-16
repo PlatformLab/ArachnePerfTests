@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "Arachne.h"
-#include "Condition.h"
 #include "Cycles.h"
 #include "TimeTrace.h"
 
@@ -17,11 +16,12 @@ using PerfUtils::TimeTrace;
 
 Arachne::ConditionVariable productIsReady;
 Arachne::SpinLock mutex;
+Arachne::ThreadId producerId;
 
-volatile Arachne::ThreadId producerId;
+std::atomic<bool> producerHasStarted;
 
 void producer() {
-    producerId = Arachne::getThreadId();
+    producerHasStarted = true;
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         Arachne::block();
         Arachne::sleep(500);
@@ -39,9 +39,6 @@ void producer() {
 }
 
 void consumer() {
-    printf("ConsumerId = %p\n", Arachne::getThreadId());
-    while (!producerId);
-
 	mutex.lock();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         Arachne::signal(producerId);
@@ -69,7 +66,12 @@ int main(int argc, char** argv){
     }
 
     // Add some work
-	Arachne::createThread(0, producer);
+	producerId = Arachne::createThread(0, producer);
+    asm volatile ("" : : : "memory");
+    // Wait for producer to start running before starting consumer, to mitigate
+    // a race where the consumer signals before initialization of the kernel
+    // thread that runs the producer.
+    while (!producerHasStarted);
 	Arachne::createThread(1, consumer);
     printf("Created Producer and consumer threads\n");
     fflush(stdout);

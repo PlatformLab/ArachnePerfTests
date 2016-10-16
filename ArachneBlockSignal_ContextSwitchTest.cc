@@ -4,7 +4,6 @@
 #include <atomic>
 
 #include "Arachne.h"
-#include "Condition.h"
 #include "Cycles.h"
 #include "TimeTrace.h"
 #include "Util.h"
@@ -18,13 +17,12 @@ using PerfUtils::TimeTrace;
 #define NUM_THREADS_IN_CYCLE 2
 
 
-volatile Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
+Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
 
 // Initialized to 1, since we create consumers first.
 volatile int consumerIsReady = 1;
 
 void producer() {
-    while (!tids[NUM_THREADS_IN_CYCLE - 1]);
 	for (int i = 0; i < NUM_ITERATIONS*NUM_THREADS_IN_CYCLE; i++) {
         int index = i % NUM_THREADS_IN_CYCLE;
 		while (!consumerIsReady);
@@ -40,7 +38,6 @@ void producer() {
 }
 
 void consumer(int cid) {
-    tids[cid] = Arachne::getThreadId();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         Arachne::block();
         TimeTrace::record("Consumer just woke up %x", cid);
@@ -55,7 +52,7 @@ int main(int argc, char** argv){
     Arachne::threadInit();
 
     for (int i = 0; i < NUM_THREADS_IN_CYCLE; i++) {
-        Arachne::createThread(1, consumer,  i);
+        tids[i] = Arachne::createThread(1, consumer,  i);
     }
 	Arachne::createThread(0, producer);
 
