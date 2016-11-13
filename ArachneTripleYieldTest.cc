@@ -41,5 +41,5 @@ int main(int argc, char** argv){
     Arachne::threadInit();
     Arachne::createThread(3, realMain, argc, argv);
     // Must be the last call
-    Arachne::mainThreadJoinPool();
+    Arachne::waitForTermination();
 }

@@ -42,6 +42,6 @@ int main() {
     Arachne::threadInit();
     Arachne::createThread(-1, realMain);
     // Must be the last call
-    Arachne::mainThreadJoinPool();
+    Arachne::waitForTermination();
     return 0;
 }

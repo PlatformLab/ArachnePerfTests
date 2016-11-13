@@ -59,5 +59,5 @@ int main(int argc, char** argv){
     printf("Created Producer and consumer threads\n");
     fflush(stdout);
     // Must be the last call
-    Arachne::mainThreadJoinPool();
+    Arachne::waitForTermination();
 }
