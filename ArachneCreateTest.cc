@@ -37,11 +37,9 @@ int realMain() {
     return 0;
 }
 
-int main() {
+int main(int argc, const char** argv) {
     // Initialize the library
-    int nArgs = 2;
-    const char* args[] = {"--numCores", "2"};
-    Arachne::init(&nArgs, args);
+    Arachne::init(&argc, argv);
     Arachne::createThread(-1, realMain);
     // Must be the last call
     Arachne::waitForTermination();

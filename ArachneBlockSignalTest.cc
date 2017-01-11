@@ -51,13 +51,11 @@ void sleeper() {
     Arachne::block();
 }
 
-int main(int argc, char** argv){
+int main(int argc, const char** argv){
+    Arachne::init(&argc, argv);
     int threadListLength = 0;
     if (argc > 1) threadListLength = atoi(argv[1]);
     // Initialize the library
-    int nArgs = 2;
-    const char* args[] = {"--numCores", "2"};
-    Arachne::init(&nArgs, args);
 
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++) {

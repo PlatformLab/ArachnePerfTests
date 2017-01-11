@@ -47,11 +47,9 @@ void consumer(int cid) {
     fflush(stdout);
 }
 
-int main(int argc, char** argv){
+int main(int argc, const char** argv){
     // Initialize the library
-    int nArgs = 2;
-    const char* args[] = {"--numCores", "2"};
-    Arachne::init(&nArgs, args);
+    Arachne::init(&argc, argv);
 
     for (int i = 0; i < NUM_THREADS_IN_CYCLE; i++) {
         tids[i] = Arachne::createThread(1, consumer,  i);

@@ -26,19 +26,17 @@ void printEveryN(int start, int end, int increment) {
     printf("%d Start Finished!\n", start);
 }
 
-int realMain(int argc, char** argv) {
+int realMain(int argc, const char** argv) {
     // Add some work
     Arachne::createThread(0, printEveryN, 0, 99999, 2);
     Arachne::createThread(0, printEveryN, 1, 100000, 2);
     return 0;
 }
 
-int main(int argc, char** argv){
+int main(int argc, const char** argv){
     // Initialize the library
-    int nArgs = 2;
-    const char* args[] = {"--numCores", "2"};
-    Arachne::init(&nArgs, args);
-    Arachne::createThread(3, realMain, argc, argv);
+    Arachne::init(&argc, argv);
+    Arachne::createThread(1, realMain, argc, argv);
     // Must be the last call
     Arachne::waitForTermination();
 }

@@ -28,7 +28,7 @@ void runForever(int id) {
     }
 }
 
-int realMain(int argc, char** argv) {
+int realMain(int argc, const char** argv) {
     // Add some work
     Arachne::createThread(0, runForever, 0);
     Arachne::createThread(0, runForever, 1);
@@ -36,12 +36,10 @@ int realMain(int argc, char** argv) {
     return 0;
 }
 
-int main(int argc, char** argv){
+int main(int argc, const char** argv){
     // Initialize the library
-    int nArgs = 2;
-    const char* args[] = {"--numCores", "2"};
-    Arachne::init(&nArgs, args);
-    Arachne::createThread(3, realMain, argc, argv);
+    Arachne::init(&argc, argv);
+    Arachne::createThread(1, realMain, argc, argv);
     // Must be the last call
     Arachne::waitForTermination();
 }
