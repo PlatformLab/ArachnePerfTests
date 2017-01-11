@@ -39,7 +39,7 @@ int realMain() {
 
 int main() {
     // Initialize the library
-    Arachne::threadInit();
+    Arachne::init();
     Arachne::createThread(-1, realMain);
     // Must be the last call
     Arachne::waitForTermination();

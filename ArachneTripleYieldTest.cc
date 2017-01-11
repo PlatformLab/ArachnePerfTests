@@ -38,7 +38,7 @@ int realMain(int argc, char** argv) {
 
 int main(int argc, char** argv){
     // Initialize the library
-    Arachne::threadInit();
+    Arachne::init();
     Arachne::createThread(3, realMain, argc, argv);
     // Must be the last call
     Arachne::waitForTermination();

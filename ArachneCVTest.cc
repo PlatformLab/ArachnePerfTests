@@ -58,7 +58,7 @@ int main(int argc, char** argv){
     int threadListLength = 0;
     if (argc > 1) threadListLength = atoi(argv[1]);
     // Initialize the library
-    Arachne::threadInit();
+    Arachne::init();
 
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++) {

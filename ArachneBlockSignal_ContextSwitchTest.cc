@@ -49,7 +49,7 @@ void consumer(int cid) {
 
 int main(int argc, char** argv){
     // Initialize the library
-    Arachne::threadInit();
+    Arachne::init();
 
     for (int i = 0; i < NUM_THREADS_IN_CYCLE; i++) {
         tids[i] = Arachne::createThread(1, consumer,  i);
