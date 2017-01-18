@@ -15,7 +15,7 @@ using PerfUtils::TimeTrace;
 
 #define NUM_ITERATIONS 10000
 
-volatile int consumerIsReady = 1;
+volatile int consumerIsReady = 0;
 
 
 // This is used for signalling
@@ -36,6 +36,8 @@ void producer() {
 }
 
 void consumer() {
+    // The producer we are ready.
+    consumerIsReady = 1;
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         TimeTrace::record("Consumer about to block");
         Arachne::block();

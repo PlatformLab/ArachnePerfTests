@@ -19,8 +19,7 @@ using PerfUtils::TimeTrace;
 
 Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
 
-// Initialized to 1, since we create consumers first.
-volatile int consumerIsReady = 1;
+volatile int consumerIsReady = 0;
 
 void producer() {
 	for (int i = 0; i < NUM_ITERATIONS*NUM_THREADS_IN_CYCLE; i++) {
@@ -38,6 +37,8 @@ void producer() {
 }
 
 void consumer(int cid) {
+    if (cid == 0)
+        consumerIsReady = 1;
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         Arachne::block();
         TimeTrace::record("Consumer just woke up %x", cid);
