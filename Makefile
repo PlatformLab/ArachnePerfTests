@@ -11,7 +11,7 @@ all: $(BINS) $(EXTRAS)
 ################################################################################
 # Arachne Targets
 
-$(BINS) : % : %.cc ../Arachne/libArachne.a
+$(BINS) : % : %.cc ../Arachne/libArachne.a AllocCore.cc
 	g++  $(DEBUG) $(CXXFLAGS)  $< AllocCore.cc $(LIBS) -o $@
 
 

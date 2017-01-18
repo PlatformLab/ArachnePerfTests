@@ -6,7 +6,8 @@
 #include <mutex>
 #include "Util.h"
 
-
+#define gettid() syscall(SYS_gettid)
+//#define VERBOSE
 void split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss;
     ss.str(s);
@@ -60,5 +61,8 @@ void pinAvailableCore() {
     int coreId = cores.back();
     cores.pop_back();
     coreAllocMutex.unlock();
+    #ifdef VERBOSE
+    printf("Pinning %lu to Core %d.\n", gettid(), coreId);
+    #endif
     PerfUtils::Util::pinThreadToCore(coreId);
 }
