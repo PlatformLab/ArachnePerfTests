@@ -5,7 +5,7 @@
 #include "Cycles.h"
 #include "TimeTrace.h"
 
-#define NUM_THREADS 10000
+#define NUM_THREADS 1000000
 
 volatile int flag;
 
