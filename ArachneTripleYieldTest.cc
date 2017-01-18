@@ -17,8 +17,10 @@ using PerfUtils::TimeTrace;
   * that are perpetually yielding.
   */
 
-
+void pinAvailableCore();
 void runForever(int id) {
+    if (id == 0)
+        pinAvailableCore();
     while (true) {
         Arachne::yield();
         if (id == 2) { 

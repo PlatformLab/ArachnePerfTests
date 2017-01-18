@@ -4,7 +4,7 @@ LIBS=-I../Arachne  -L../Arachne -lArachne  -I../PerfUtils -L../PerfUtils -lPerfU
 CXXFLAGS=-std=c++11 -O3 -Wall -Werror -Wformat=2 -Wextra -Wwrite-strings -Wno-unused-parameter -Wmissing-format-attribute -Wno-non-template-friend -Woverloaded-virtual -Wcast-qual -Wcast-align -Wconversion -fomit-frame-pointer
 
 BINS = ArachneCreateTest  ArachneYieldTest ArachneCVTest   ArachneBlockSignalTest \
-		ArachneBlockSignal_ContextSwitchTest ArachneTripleYieldTest TestSpinLock AllocCore
+		ArachneBlockSignal_ContextSwitchTest ArachneTripleYieldTest TestSpinLock
 EXTRAS = ThreadCreationTest GoThreadCreate ThreadYieldTest GoThreadYield
 all: $(BINS) $(EXTRAS)
 
@@ -12,7 +12,7 @@ all: $(BINS) $(EXTRAS)
 # Arachne Targets
 
 $(BINS) : % : %.cc ../Arachne/libArachne.a
-	g++  $(DEBUG) $(CXXFLAGS)  $< $(LIBS) -o $@
+	g++  $(DEBUG) $(CXXFLAGS)  $< AllocCore.cc $(LIBS) -o $@
 
 
 ################################################################################

@@ -12,7 +12,13 @@ volatile int flag;
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
+void pinAvailableCore();
+
 void ObjectTask(void *objectPointer) {
+    if (objectPointer == NULL) {
+        pinAvailableCore();
+        return;
+    }
     PerfUtils::TimeTrace::record("Inside thread");
     objectPointer = (char*)objectPointer+1;
     PerfUtils::TimeTrace::record("Incremented pointer that was passed to this thread");
@@ -22,11 +28,14 @@ void ObjectTask(void *objectPointer) {
 
 int realMain() {
     // Cross-core creation
-    void *dummy = (void*) 0x0;
+    pinAvailableCore();
+    void *dummy = (void*) 0x1;
+
+    Arachne::createThread(1, ObjectTask, (void*) NULL);
     for (int i = 0; i < NUM_THREADS; i++) {
         flag = 0;
         PerfUtils::TimeTrace::record("A thread is about to be born!");
-        Arachne::createThread(ObjectTask, dummy);
+        Arachne::createThread(1, ObjectTask, dummy);
         while (!flag) Arachne::yield();
     }
 
@@ -40,7 +49,7 @@ int realMain() {
 int main(int argc, const char** argv) {
     // Initialize the library
     Arachne::init(&argc, argv);
-    Arachne::createThread(-1, realMain);
+    Arachne::createThread(0, realMain);
     // Must be the last call
     Arachne::waitForTermination();
     return 0;

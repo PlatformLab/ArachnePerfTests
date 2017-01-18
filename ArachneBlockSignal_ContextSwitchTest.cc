@@ -21,7 +21,9 @@ Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
 
 volatile int consumerIsReady = 0;
 
+void pinAvailableCore();
 void producer() {
+    pinAvailableCore();
 	for (int i = 0; i < NUM_ITERATIONS*NUM_THREADS_IN_CYCLE; i++) {
         int index = i % NUM_THREADS_IN_CYCLE;
 		while (!consumerIsReady);
@@ -37,8 +39,10 @@ void producer() {
 }
 
 void consumer(int cid) {
-    if (cid == 0)
+    if (cid == 0) {
+        pinAvailableCore();
         consumerIsReady = 1;
+    }
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         Arachne::block();
         TimeTrace::record("Consumer just woke up %x", cid);

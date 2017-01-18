@@ -12,8 +12,9 @@ using PerfUtils::TimeTrace;
 
 // Used for filling up the run queue
 
-
+void pinAvailableCore();
 void printEveryN(int start, int end, int increment) {
+    if (start == 0) pinAvailableCore();
     printf("start = %d\n", start);
     uint64_t startTime = Cycles::rdtsc();
     for (int i = start; i < end; i+=increment) {

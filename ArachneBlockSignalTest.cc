@@ -21,7 +21,9 @@ volatile int consumerIsReady = 0;
 // This is used for signalling
 Arachne::ThreadId consumerId;
 
+void pinAvailableCore();
 void producer() {
+    pinAvailableCore();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		while (!consumerIsReady);
 		consumerIsReady = 0;
@@ -36,7 +38,8 @@ void producer() {
 }
 
 void consumer() {
-    // The producer we are ready.
+    // Tell the producer we are ready.
+    pinAvailableCore();
     consumerIsReady = 1;
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         TimeTrace::record("Consumer about to block");

@@ -62,9 +62,3 @@ void pinAvailableCore() {
     coreAllocMutex.unlock();
     PerfUtils::Util::pinThreadToCore(coreId);
 }
-
-int main(){
-    pinAvailableCore();
-    pinAvailableCore();
-    while (true);
-}
