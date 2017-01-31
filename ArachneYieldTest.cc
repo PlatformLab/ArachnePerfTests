@@ -5,14 +5,15 @@
 #include "Arachne.h"
 #include "Cycles.h"
 #include "TimeTrace.h"
+#include "Util.h"
 
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
+using PerfUtils::Util::pinAvailableCore;
 
 // Used for filling up the run queue
 
-void pinAvailableCore();
 void printEveryN(int start, int end, int increment) {
     if (start == 0) pinAvailableCore();
     printf("start = %d\n", start);

@@ -21,7 +21,7 @@ volatile int consumerIsReady = 0;
 // This is used for signalling
 Arachne::ThreadId consumerId;
 
-void pinAvailableCore();
+using PerfUtils::Util::pinAvailableCore;
 void producer() {
     pinAvailableCore();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {

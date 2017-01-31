@@ -5,11 +5,12 @@
 #include "Arachne.h"
 #include "Cycles.h"
 #include "TimeTrace.h"
+#include "Util.h"
 
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
-
+using PerfUtils::Util::pinAvailableCore;
 
 /**
   * This experiment is meant to test whether Arachne correctly ensures that
@@ -17,7 +18,6 @@ using PerfUtils::TimeTrace;
   * that are perpetually yielding.
   */
 
-void pinAvailableCore();
 void runForever(int id) {
     if (id == 0)
         pinAvailableCore();

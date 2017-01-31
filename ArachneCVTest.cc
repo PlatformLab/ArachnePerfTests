@@ -5,11 +5,12 @@
 #include "Arachne.h"
 #include "Cycles.h"
 #include "TimeTrace.h"
+#include "Util.h"
 
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
-
+using PerfUtils::Util::pinAvailableCore;
 
 #define NUM_ITERATIONS 10000
 
@@ -20,7 +21,6 @@ Arachne::ThreadId producerId;
 
 std::atomic<bool> producerHasStarted;
 
-void pinAvailableCore();
 void producer() {
     pinAvailableCore();
     producerHasStarted = true;

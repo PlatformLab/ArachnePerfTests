@@ -4,6 +4,7 @@
 #include "Arachne.h"
 #include "Cycles.h"
 #include "TimeTrace.h"
+#include "Util.h"
 
 #define NUM_THREADS 1000000
 
@@ -11,8 +12,7 @@ volatile int flag;
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
-
-void pinAvailableCore();
+using PerfUtils::Util::pinAvailableCore;
 
 void ObjectTask(void *objectPointer) {
     if (objectPointer == NULL) {

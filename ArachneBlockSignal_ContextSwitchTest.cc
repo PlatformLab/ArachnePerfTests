@@ -21,7 +21,8 @@ Arachne::ThreadId tids[NUM_THREADS_IN_CYCLE];
 
 volatile int consumerIsReady = 0;
 
-void pinAvailableCore();
+using PerfUtils::Util::pinAvailableCore;
+
 void producer() {
     pinAvailableCore();
 	for (int i = 0; i < NUM_ITERATIONS*NUM_THREADS_IN_CYCLE; i++) {
