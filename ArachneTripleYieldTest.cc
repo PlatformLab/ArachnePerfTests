@@ -10,7 +10,6 @@
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
-using PerfUtils::Util::pinAvailableCore;
 
 /**
   * This experiment is meant to test whether Arachne correctly ensures that
@@ -19,8 +18,6 @@ using PerfUtils::Util::pinAvailableCore;
   */
 
 void runForever(int id) {
-    if (id == 0)
-        pinAvailableCore();
     while (true) {
         Arachne::yield();
         if (id == 2) { 

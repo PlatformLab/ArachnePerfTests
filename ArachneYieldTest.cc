@@ -10,12 +10,10 @@
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
-using PerfUtils::Util::pinAvailableCore;
 
 // Used for filling up the run queue
 
 void printEveryN(int start, int end, int increment) {
-    if (start == 0) pinAvailableCore();
     printf("start = %d\n", start);
     uint64_t startTime = Cycles::rdtsc();
     for (int i = start; i < end; i+=increment) {

@@ -12,11 +12,9 @@ volatile int flag;
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
-using PerfUtils::Util::pinAvailableCore;
 
 void ObjectTask(void *objectPointer) {
     if (objectPointer == NULL) {
-        pinAvailableCore();
         return;
     }
     PerfUtils::TimeTrace::record("Inside thread");
@@ -28,7 +26,6 @@ void ObjectTask(void *objectPointer) {
 
 int realMain() {
     // Cross-core creation
-    pinAvailableCore();
     void *dummy = (void*) 0x1;
 
     Arachne::createThread(1, ObjectTask, (void*) NULL);

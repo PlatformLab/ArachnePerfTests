@@ -10,7 +10,6 @@
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
-using PerfUtils::Util::pinAvailableCore;
 
 #define NUM_ITERATIONS 10000
 
@@ -22,7 +21,6 @@ Arachne::ThreadId producerId;
 std::atomic<bool> producerHasStarted;
 
 void producer() {
-    pinAvailableCore();
     producerHasStarted = true;
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         Arachne::block();
@@ -41,7 +39,6 @@ void producer() {
 }
 
 void consumer() {
-    pinAvailableCore();
 	mutex.lock();
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
         Arachne::signal(producerId);
