@@ -28,17 +28,22 @@ int realMain() {
     // Cross-core creation
     void *dummy = (void*) 0x1;
 
+    // Do some extra work before starting the next thread.
+    uint64_t k = 0;
+
     Arachne::createThread(1, ObjectTask, (void*) NULL);
     for (int i = 0; i < NUM_THREADS; i++) {
         flag = 0;
         PerfUtils::TimeTrace::record("A thread is about to be born!");
         Arachne::createThread(1, ObjectTask, dummy);
         while (!flag) Arachne::yield();
+        for (uint64_t j = 0; j < 10000U; j++) k += j;
     }
 
     TimeTrace::setOutputFileName("Create.log");
     TimeTrace::print();
     printf("Creation Test Complete\n");
+    printf("%lu\n", k);
     fflush(stdout);
     return 0;
 }
