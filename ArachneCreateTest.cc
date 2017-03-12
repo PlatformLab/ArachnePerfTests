@@ -31,11 +31,11 @@ int realMain() {
     // Do some extra work before starting the next thread.
     uint64_t k = 0;
 
-    Arachne::createThread(1, ObjectTask, (void*) NULL);
+    Arachne::createThreadOnCore(1, ObjectTask, (void*) NULL);
     for (int i = 0; i < NUM_THREADS; i++) {
         flag = 0;
         PerfUtils::TimeTrace::record("A thread is about to be born!");
-        Arachne::createThread(1, ObjectTask, dummy);
+        Arachne::createThreadOnCore(1, ObjectTask, dummy);
         while (!flag) Arachne::yield();
         for (uint64_t j = 0; j < 10000U; j++) k += j;
     }
@@ -51,7 +51,7 @@ int realMain() {
 int main(int argc, const char** argv) {
     // Initialize the library
     Arachne::init(&argc, argv);
-    Arachne::createThread(0, realMain);
+    Arachne::createThreadOnCore(0, realMain);
     // Must be the last call
     Arachne::waitForTermination();
     return 0;

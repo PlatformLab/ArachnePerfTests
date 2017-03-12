@@ -29,16 +29,16 @@ void runForever(int id) {
 
 int realMain(int argc, const char** argv) {
     // Add some work
-    Arachne::createThread(0, runForever, 0);
-    Arachne::createThread(0, runForever, 1);
-    Arachne::createThread(0, runForever, 2);
+    Arachne::createThreadOnCore(0, runForever, 0);
+    Arachne::createThreadOnCore(0, runForever, 1);
+    Arachne::createThreadOnCore(0, runForever, 2);
     return 0;
 }
 
 int main(int argc, const char** argv){
     // Initialize the library
     Arachne::init(&argc, argv);
-    Arachne::createThread(1, realMain, argc, argv);
+    Arachne::createThreadOnCore(1, realMain, argc, argv);
     // Must be the last call
     Arachne::waitForTermination();
 }

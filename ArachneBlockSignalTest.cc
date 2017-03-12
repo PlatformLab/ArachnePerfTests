@@ -61,12 +61,12 @@ int main(int argc, const char** argv){
 
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++) {
-        Arachne::createThread(1, sleeper);
+        Arachne::createThreadOnCore(1, sleeper);
     }
 
     // Add some work
-	consumerId = Arachne::createThread(1, consumer);
-	Arachne::createThread(0, producer);
+	consumerId = Arachne::createThreadOnCore(1, consumer);
+	Arachne::createThreadOnCore(0, producer);
     printf("Created Producer and consumer threads\n");
     fflush(stdout);
     // Must be the last call

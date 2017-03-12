@@ -28,15 +28,15 @@ void printEveryN(int start, int end, int increment) {
 
 int realMain(int argc, const char** argv) {
     // Add some work
-    Arachne::createThread(0, printEveryN, 0, 99999, 2);
-    Arachne::createThread(0, printEveryN, 1, 100000, 2);
+    Arachne::createThreadOnCore(0, printEveryN, 0, 99999, 2);
+    Arachne::createThreadOnCore(0, printEveryN, 1, 100000, 2);
     return 0;
 }
 
 int main(int argc, const char** argv){
     // Initialize the library
     Arachne::init(&argc, argv);
-    Arachne::createThread(1, realMain, argc, argv);
+    Arachne::createThreadOnCore(1, realMain, argc, argv);
     // Must be the last call
     Arachne::waitForTermination();
 }

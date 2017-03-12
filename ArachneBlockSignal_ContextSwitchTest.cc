@@ -55,9 +55,9 @@ int main(int argc, const char** argv){
     Arachne::init(&argc, argv);
 
     for (int i = 0; i < NUM_THREADS_IN_CYCLE; i++) {
-        tids[i] = Arachne::createThread(1, consumer,  i);
+        tids[i] = Arachne::createThreadOnCore(1, consumer,  i);
     }
-	Arachne::createThread(0, producer);
+	Arachne::createThreadOnCore(0, producer);
 
     printf("Created Producer and consumer threads\n");
     fflush(stdout);
