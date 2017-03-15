@@ -6,8 +6,10 @@ ArachneCreateTest
 ArachneBlockSignalTest
 ArachneBlockSignal_ContextSwitchTest
 ArachneTripleYieldTest
+TestSpinLock
 *.err
 *.asm
 *.dat
 *.patch
+*.log
 .gdb_history
