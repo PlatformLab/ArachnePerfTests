@@ -22,6 +22,7 @@ void runForever(int id) {
         Arachne::yield();
         if (id == 2) { 
             printf("Starvation has not occurred!\n");
+            fflush(stdout);
             id = 3;
         }
     }
@@ -37,6 +38,8 @@ int realMain(int argc, const char** argv) {
 
 int main(int argc, const char** argv){
     // Initialize the library
+    Arachne::minNumCores = 2;
+    Arachne::maxNumCores = 2;
     Arachne::init(&argc, argv);
     Arachne::createThreadOnCore(1, realMain, argc, argv);
     // Must be the last call
