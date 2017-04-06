@@ -1,58 +1,56 @@
 #include <stdio.h>
+#include <string.h>
 #include <vector>
 
 #include "Arachne.h"
 #include "Cycles.h"
-#include "TimeTrace.h"
 #include "Util.h"
+#include "Stats.h"
 
 #define NUM_THREADS 1000000
 
 volatile int flag;
 
 using PerfUtils::Cycles;
-using PerfUtils::TimeTrace;
 
-void ObjectTask(void *objectPointer) {
-    if (objectPointer == NULL) {
-        return;
-    }
-    PerfUtils::TimeTrace::record("Inside thread");
-    objectPointer = (char*)objectPointer+1;
-    PerfUtils::TimeTrace::record("Incremented pointer that was passed to this thread");
+std::atomic<uint64_t> arrayIndex;
+uint64_t latencies[NUM_THREADS];
+
+void task(uint64_t creationTime) {
+    uint64_t latency = Cycles::rdtsc() - creationTime;
+    latencies[arrayIndex++] = latency;
     flag = 1;
 }
 
 
 int realMain() {
-    // Cross-core creation
-    void *dummy = (void*) 0x1;
-
+    // Page in our data store
+    memset(latencies, 0, NUM_THREADS*sizeof(uint64_t));
     // Do some extra work before starting the next thread.
     uint64_t k = 0;
-
-    Arachne::createThreadOnCore(1, ObjectTask, (void*) NULL);
     for (int i = 0; i < NUM_THREADS; i++) {
         flag = 0;
-        PerfUtils::TimeTrace::record("A thread is about to be born!");
-        Arachne::createThreadOnCore(1, ObjectTask, dummy);
+        Arachne::createThreadOnCore(1, task, Cycles::rdtsc());
         while (!flag) Arachne::yield();
         for (uint64_t j = 0; j < 10000U; j++) k += j;
     }
-
-    TimeTrace::setOutputFileName("Create.log");
-    TimeTrace::print();
-    printf("Creation Test Complete\n");
-    printf("%lu\n", k);
+    FILE* devNull = fopen("/dev/null", "w");
+    fprintf(devNull,"%lu\n", k);
+    fclose(devNull);
+    while (!flag) Arachne::yield();
     fflush(stdout);
+    Arachne::shutDown();
     return 0;
 }
 
 int main(int argc, const char** argv) {
     // Initialize the library
+    Arachne::minNumCores = 2;
+    Arachne::maxNumCores = 2;
     Arachne::init(&argc, argv);
     Arachne::createThreadOnCore(0, realMain);
-    // Must be the last call
     Arachne::waitForTermination();
+    if (arrayIndex != NUM_THREADS) abort();
+    printStatistics("Thread Creation Latency", latencies, NUM_THREADS, NULL);
     return 0;
 }
