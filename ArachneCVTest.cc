@@ -68,7 +68,10 @@ int main(int argc, const char** argv){
     // a race where the consumer signals before initialization of the kernel
     // thread that runs the producer.
     while (!producerHasStarted);
-	Arachne::createThreadOnCore(1, consumer);
+    if (argc > 1)
+        Arachne::createThreadOnCore(0, consumer);
+    else
+        Arachne::createThreadOnCore(1, consumer);
     // Must be the last call
     Arachne::waitForTermination();
 
