@@ -53,5 +53,7 @@ int main(int argc, const char** argv){
     // Must be the last call
     Arachne::waitForTermination();
     if (arrayIndex != NUM_SAMPLES) abort();
+    for (int i = 0; i < NUM_SAMPLES; i++)
+        latencies[i] = Cycles::toNanoseconds(latencies[i]);
     printStatistics("Thread Yield Latency", latencies, NUM_SAMPLES, "data");
 }
