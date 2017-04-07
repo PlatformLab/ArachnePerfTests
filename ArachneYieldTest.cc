@@ -4,39 +4,54 @@
 
 #include "Arachne.h"
 #include "Cycles.h"
-#include "TimeTrace.h"
 #include "Util.h"
+#include "Stats.h"
 
+#define NUM_SAMPLES 1000000
 
 using PerfUtils::Cycles;
-using PerfUtils::TimeTrace;
 
-// Used for filling up the run queue
+std::atomic<uint64_t> arrayIndex;
+uint64_t latencies[NUM_SAMPLES];
+std::atomic<uint64_t> beforeYield;
 
-void printEveryN(int start, int end, int increment) {
-    printf("start = %d\n", start);
-    uint64_t startTime = Cycles::rdtsc();
-    for (int i = start; i < end; i+=increment) {
+/**
+  * This benchmark computes a median time for a yield in one thread to return
+  * in another thread in the same core.
+  * Note that this benchmark has no direct analog in golang or std::thread,
+  * since we cannot finely control core placement in these systems.
+  *
+  * Alternatively, we could measure the time it takes to return to the original
+  * thread, but this seems less intuitive and still would not match with
+  * std::thread or Golang.
+  */
+void yielder() {
+    for (int i = 0; i < NUM_SAMPLES; i++) {
+        latencies[arrayIndex++] = Cycles::rdtsc() - beforeYield;
         Arachne::yield();
     }
-
-    uint64_t timePerYield = (Cycles::rdtsc() - startTime) / (end - start);
-    printf("%lu\n", Cycles::toNanoseconds(timePerYield));
-    fflush(stdout);
-    printf("%d Start Finished!\n", start);
 }
 
-int realMain(int argc, const char** argv) {
-    // Add some work
-    Arachne::createThreadOnCore(0, printEveryN, 0, 99999, 2);
-    Arachne::createThreadOnCore(0, printEveryN, 1, 100000, 2);
+int realMain() {
+    // Page in our data store
+    memset(latencies, 0, NUM_SAMPLES*sizeof(uint64_t));
+
+    Arachne::ThreadId id = Arachne::createThreadOnCore(0, yielder);
+    for (int i = 0; i < NUM_SAMPLES; i++) {
+        beforeYield = Cycles::rdtsc();
+        Arachne::yield();
+    }
+    Arachne::join(id);
+    Arachne::shutDown();
     return 0;
 }
 
 int main(int argc, const char** argv){
     // Initialize the library
     Arachne::init(&argc, argv);
-    Arachne::createThreadOnCore(1, realMain, argc, argv);
+    Arachne::createThreadOnCore(0, realMain);
     // Must be the last call
     Arachne::waitForTermination();
+    if (arrayIndex != NUM_SAMPLES) abort();
+    printStatistics("Thread Yield Latency", latencies, NUM_SAMPLES, "data");
 }

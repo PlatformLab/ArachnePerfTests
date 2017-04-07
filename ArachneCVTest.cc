@@ -4,15 +4,16 @@
 
 #include "Arachne.h"
 #include "Cycles.h"
-#include "TimeTrace.h"
 #include "Util.h"
+#include "Stats.h"
 
+#define NUM_SAMPLES 1000000
 
 using PerfUtils::Cycles;
-using PerfUtils::TimeTrace;
+std::atomic<uint64_t> arrayIndex;
+uint64_t latencies[NUM_SAMPLES];
 
-#define NUM_ITERATIONS 10000
-
+std::atomic<uint64_t> beforeNotify;
 
 Arachne::ConditionVariable productIsReady;
 Arachne::SpinLock mutex;
@@ -22,32 +23,25 @@ std::atomic<bool> producerHasStarted;
 
 void producer() {
     producerHasStarted = true;
-	for (int i = 0; i < NUM_ITERATIONS; i++) {
+	for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::block();
-        Arachne::sleep(500);
         mutex.lock();
-        TimeTrace::record("Producer about to signal");
+        beforeNotify = Cycles::rdtsc();
 	    productIsReady.notifyOne();
-        TimeTrace::record("Producer finished signaling");
         mutex.unlock();
-        TimeTrace::record("Producer manually unlocked");
 	}
-    printf("Producer finished\n");
-    fflush(stdout);
-    TimeTrace::setOutputFileName("CV.log");
-    TimeTrace::print();
 }
 
 void consumer() {
 	mutex.lock();
-	for (int i = 0; i < NUM_ITERATIONS; i++) {
+	for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::signal(producerId);
         productIsReady.wait(mutex);
-        TimeTrace::record("Consumer just woke up");
+        latencies[arrayIndex++] = Cycles::rdtsc() - beforeNotify;
 	}
 	mutex.unlock();
-    printf("Consumer finished\n");
-    fflush(stdout);
+    Arachne::join(producerId);
+    Arachne::shutDown();
 }
 
 void sleeper() {
@@ -58,6 +52,8 @@ int main(int argc, const char** argv){
     int threadListLength = 0;
     if (argc > 1) threadListLength = atoi(argv[1]);
     // Initialize the library
+    Arachne::minNumCores = 2;
+    Arachne::maxNumCores = 2;
     Arachne::init(&argc, argv);
 
     // Add a bunch of threads to the run list that will never get to run again.
@@ -73,8 +69,10 @@ int main(int argc, const char** argv){
     // thread that runs the producer.
     while (!producerHasStarted);
 	Arachne::createThreadOnCore(1, consumer);
-    printf("Created Producer and consumer threads\n");
-    fflush(stdout);
     // Must be the last call
     Arachne::waitForTermination();
+
+    if (arrayIndex != NUM_SAMPLES) abort();
+    printStatistics("Block Signal Latency", latencies, NUM_SAMPLES, "data");
+    return 0;
 }

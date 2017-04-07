@@ -13,3 +13,4 @@ TestSpinLock
 *.patch
 *.log
 .gdb_history
+data
