@@ -73,6 +73,6 @@ int main(int argc, const char** argv){
     Arachne::waitForTermination();
 
     if (arrayIndex != NUM_SAMPLES) abort();
-    printStatistics("Block Signal Latency", latencies, NUM_SAMPLES, "data");
+    printStatistics("Condition Variable Wakeup", latencies, NUM_SAMPLES, "data");
     return 0;
 }
