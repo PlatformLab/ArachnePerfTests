@@ -11,8 +11,11 @@
 
 using PerfUtils::Cycles;
 
-
 #define NUM_SAMPLES 1000000
+
+namespace Arachne {
+    extern bool disableLoadEstimation;
+}
 
 volatile int consumerIsReady = 0;
 
@@ -57,6 +60,8 @@ int main(int argc, const char** argv){
     // Initialize the library
     Arachne::minNumCores = 2;
     Arachne::maxNumCores = 2;
+    Arachne::disableLoadEstimation = true;
+    Arachne::Logger::setLogLevel(Arachne::WARNING);
     Arachne::init(&argc, argv);
 
     int threadListLength = 0;
