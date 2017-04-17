@@ -15,10 +15,10 @@ namespace Arachne {
 
 using PerfUtils::Cycles;
 
-std::atomic<uint64_t> arrayIndex;
 uint64_t latencies[NUM_SAMPLES];
 
 void task(uint64_t creationTime) {
+    static uint64_t arrayIndex = 0;
     uint64_t latency = Cycles::rdtsc() - creationTime;
     latencies[arrayIndex++] = latency;
 }
@@ -65,7 +65,6 @@ int main(int argc, const char** argv) {
 
     Arachne::createThreadOnCore(0, realMain);
     Arachne::waitForTermination();
-    if (arrayIndex != NUM_SAMPLES) abort();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
     printStatistics("Thread Creation Latency", latencies, NUM_SAMPLES, "data");
