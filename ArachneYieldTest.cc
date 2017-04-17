@@ -11,9 +11,7 @@
 
 using PerfUtils::Cycles;
 
-std::atomic<uint64_t> arrayIndex;
 uint64_t latencies[NUM_SAMPLES];
-std::atomic<uint64_t> beforeYield;
 
 /**
   * This benchmark computes a median time for a yield in one thread to return
@@ -27,7 +25,6 @@ std::atomic<uint64_t> beforeYield;
   */
 void yielder() {
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        latencies[arrayIndex++] = Cycles::rdtsc() - beforeYield;
         Arachne::yield();
     }
 }
@@ -38,8 +35,9 @@ int realMain() {
 
     Arachne::ThreadId id = Arachne::createThreadOnCore(0, yielder);
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        beforeYield = Cycles::rdtsc();
+        uint64_t beforeYield = Cycles::rdtsc();
         Arachne::yield();
+        latencies[i] = (Cycles::rdtsc() - beforeYield) / 2;
     }
     Arachne::join(id);
     Arachne::shutDown();
@@ -54,7 +52,6 @@ int main(int argc, const char** argv){
     Arachne::createThreadOnCore(0, realMain);
     // Must be the last call
     Arachne::waitForTermination();
-    if (arrayIndex != NUM_SAMPLES) abort();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
     printStatistics("Thread Yield Latency", latencies, NUM_SAMPLES, "data");
