@@ -9,6 +9,10 @@
 
 #define NUM_SAMPLES 1000000
 
+namespace Arachne {
+    extern bool disableLoadEstimation;
+}
+
 using PerfUtils::Cycles;
 
 std::atomic<uint64_t> arrayIndex;
@@ -28,6 +32,7 @@ int realMain() {
     for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::ThreadId id = Arachne::createThreadOnCore(1, task, Cycles::rdtsc());
         Arachne::join(id);
+        PerfUtils::Util::serialize();
         for (uint64_t j = 0; j < 10000U; j++) k += j;
     }
     FILE* devNull = fopen("/dev/null", "w");
@@ -38,11 +43,26 @@ int realMain() {
     return 0;
 }
 
+void sleeper() {
+    Arachne::block();
+}
+
 int main(int argc, const char** argv) {
     // Initialize the library
     Arachne::minNumCores = 2;
     Arachne::maxNumCores = 2;
+    Arachne::disableLoadEstimation = true;
+    Arachne::Logger::setLogLevel(Arachne::WARNING);
     Arachne::init(&argc, argv);
+
+    int threadListLength = 0;
+    if (argc > 1) threadListLength = atoi(argv[1]);
+
+    // Add a bunch of threads to the run list that will never run again, to
+    // check for interference with creation.
+    for (int i = 0; i < threadListLength; i++)
+        Arachne::createThreadOnCore(1, sleeper);
+
     Arachne::createThreadOnCore(0, realMain);
     Arachne::waitForTermination();
     if (arrayIndex != NUM_SAMPLES) abort();
