@@ -48,6 +48,8 @@ int realMain() {
 
 int main(int argc, const char** argv){
     // Initialize the library
+    Arachne::minNumCores = 2;
+    Arachne::maxNumCores = 2;
     Arachne::init(&argc, argv);
     Arachne::createThreadOnCore(0, realMain);
     // Must be the last call
