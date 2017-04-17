@@ -16,7 +16,6 @@ using PerfUtils::Cycles;
 
 volatile int consumerIsReady = 0;
 
-std::atomic<uint64_t> arrayIndex;
 uint64_t latencies[NUM_SAMPLES];
 std::atomic<uint64_t> beforeSignal;
 
@@ -27,6 +26,9 @@ void producer() {
 	for (int i = 0; i < NUM_SAMPLES; i++) {
 		while (!consumerIsReady);
 		consumerIsReady = 0;
+        // Wait for consumer to actually sleep
+        Cycles::sleep(1);
+        PerfUtils::Util::serialize();
         beforeSignal = Cycles::rdtsc();
         Arachne::signal(consumerId);
 	}
@@ -39,7 +41,9 @@ void consumer() {
     consumerIsReady = 1;
 	for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::block();
-        latencies[arrayIndex++] = Cycles::rdtsc() - beforeSignal;
+        uint64_t stopTime = Cycles::rdtsc();
+        PerfUtils::Util::serialize();
+        latencies[i] = stopTime - beforeSignal;
         while (consumerIsReady);
 		consumerIsReady = 1;
 	}
@@ -68,7 +72,6 @@ int main(int argc, const char** argv){
     // Must be the last call
     Arachne::waitForTermination();
 
-    if (arrayIndex != NUM_SAMPLES) abort();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
     printStatistics("Block Signal Latency", latencies, NUM_SAMPLES, "data");
