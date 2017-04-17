@@ -37,7 +37,9 @@ void consumer() {
 	for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::signal(producerId);
         productIsReady.wait(mutex);
-        latencies[arrayIndex++] = Cycles::rdtsc() - beforeNotify;
+        uint64_t wakeupTime = Cycles::rdtsc();
+        PerfUtils::Util::serialize();
+        latencies[i] = wakeupTime - beforeNotify;
 	}
 	mutex.unlock();
     Arachne::join(producerId);
@@ -75,7 +77,6 @@ int main(int argc, const char** argv){
     // Must be the last call
     Arachne::waitForTermination();
 
-    if (arrayIndex != NUM_SAMPLES) abort();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
     printStatistics("Condition Variable Wakeup", latencies, NUM_SAMPLES, "data");
