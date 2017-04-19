@@ -16,10 +16,12 @@ namespace Arachne {
 using PerfUtils::Cycles;
 
 uint64_t latencies[NUM_SAMPLES];
+static uint64_t arrayIndex = 0;
 
 void task(uint64_t creationTime) {
-    static uint64_t arrayIndex = 0;
-    uint64_t latency = Cycles::rdtsc() - creationTime;
+    uint64_t startTime = Cycles::rdtsc();
+    PerfUtils::Util::serialize();
+    uint64_t latency = startTime - creationTime;
     latencies[arrayIndex++] = latency;
 }
 
@@ -30,10 +32,11 @@ int realMain() {
     // Do some extra work before starting the next thread.
     uint64_t k = 0;
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        Arachne::ThreadId id = Arachne::createThreadOnCore(1, task, Cycles::rdtsc());
-        Arachne::join(id);
+        Cycles::sleep(1);
         PerfUtils::Util::serialize();
-        for (uint64_t j = 0; j < 10000U; j++) k += j;
+        uint64_t creationTime = Cycles::rdtsc();
+        Arachne::ThreadId id = Arachne::createThreadOnCore(1, task, creationTime);
+        Arachne::join(id);
     }
     FILE* devNull = fopen("/dev/null", "w");
     fprintf(devNull,"%lu\n", k);
