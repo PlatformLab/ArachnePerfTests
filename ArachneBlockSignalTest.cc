@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <vector>
 #include <atomic>
+#include <random>
 
 #include "Arachne.h"
 #include "Cycles.h"
@@ -11,7 +12,8 @@
 
 using PerfUtils::Cycles;
 
-#define NUM_SAMPLES 1000000
+#define NUM_SAMPLES 10000000
+#define MEAN_DELAY 0.000002
 
 namespace Arachne {
     extern bool disableLoadEstimation;
@@ -26,15 +28,21 @@ std::atomic<uint64_t> beforeSignal;
 Arachne::ThreadId consumerId;
 
 void producer() {
-	for (int i = 0; i < NUM_SAMPLES; i++) {
-		while (!consumerIsReady);
-		consumerIsReady = 0;
-        // Wait for consumer to actually sleep
-        Cycles::sleep(1);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> uniformIG(0, MEAN_DELAY * 2);
+
+    for (int i = 0; i < NUM_SAMPLES; i++) {
+        while (!consumerIsReady);
+        consumerIsReady = 0;
+        // Wait a random interval for consumer to actually sleep
+        uint64_t signalTime = Cycles::rdtsc() + Cycles::fromSeconds(uniformIG(gen));
+        while (Cycles::rdtsc() < signalTime);
+
         PerfUtils::Util::serialize();
         beforeSignal = Cycles::rdtsc();
         Arachne::signal(consumerId);
-	}
+    }
     Arachne::join(consumerId);
     Arachne::shutDown();
 }
