@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <vector>
+#include <random>
 
 #include "Arachne.h"
 #include "Cycles.h"
 #include "Util.h"
 #include "Stats.h"
 
-#define NUM_SAMPLES 1000000
+#define NUM_SAMPLES 10000000
+#define MEAN_DELAY 0.000002
 
 namespace Arachne {
     extern bool disableLoadEstimation;
@@ -29,10 +31,18 @@ void task(uint64_t creationTime) {
 int realMain() {
     // Page in our data store
     memset(latencies, 0, NUM_SAMPLES*sizeof(uint64_t));
+
+    // Set up random smoothing.
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> uniformIG(0, MEAN_DELAY * 2);
+
     // Do some extra work before starting the next thread.
     uint64_t k = 0;
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        Cycles::sleep(1);
+        // Wait a random interval before next creation
+        uint64_t signalTime = Cycles::rdtsc() + Cycles::fromSeconds(uniformIG(gen));
+        while (Cycles::rdtsc() < signalTime);
         PerfUtils::Util::serialize();
         uint64_t creationTime = Cycles::rdtsc();
         Arachne::ThreadId id = Arachne::createThreadOnCore(1, task, creationTime);
