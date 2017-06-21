@@ -8,6 +8,7 @@ ArachneBlockSignal_ContextSwitchTest
 ArachneTripleYieldTest
 TestSpinLock
 NullYieldTest
+ThreadTurnaround
 *.err
 *.asm
 *.dat
