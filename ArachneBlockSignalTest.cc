@@ -5,8 +5,8 @@
 #include <random>
 
 #include "Arachne.h"
-#include "Cycles.h"
-#include "Util.h"
+#include "PerfUtils/Cycles.h"
+#include "PerfUtils/Util.h"
 #include "Stats.h"
 
 

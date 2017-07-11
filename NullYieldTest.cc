@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "Arachne.h"
-#include "Cycles.h"
-#include "Util.h"
+#include "PerfUtils/Cycles.h"
+#include "PerfUtils/Util.h"
 #include "Stats.h"
 
 #define NUM_SAMPLES 1000000

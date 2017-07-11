@@ -4,9 +4,9 @@
 #include <atomic>
 
 #include "Arachne.h"
-#include "Cycles.h"
-#include "TimeTrace.h"
-#include "Util.h"
+#include "PerfUtils/Cycles.h"
+#include "PerfUtils/TimeTrace.h"
+#include "PerfUtils/Util.h"
 
 
 using PerfUtils::Cycles;
