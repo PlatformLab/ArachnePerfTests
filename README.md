@@ -1,5 +1,3 @@
-# Arachne Performance Tests
+# Arachne Latency Microbenchmarks
 
-Currently, this repository is just a collection performance tests for the Arachne threading library.
-
-It also includes some comparison benchmarks of other systems such as std::thread and Golang threading.
+These tests bencmark best-case scenarios for the cost of a threading primitive offered by the Arachne threading runtime.
