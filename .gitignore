@@ -16,3 +16,4 @@ ThreadTurnaround
 *.log
 .gdb_history
 data
+bin/

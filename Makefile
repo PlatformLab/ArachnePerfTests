@@ -8,12 +8,15 @@ BIN_DIR = bin
 PERFUTILS=../PerfUtils
 ARACHNE=../Arachne
 COREARBITER=../CoreArbiter
-LIBS=-I$(ARACHNE)/include  -L$(ARACHNE)/lib -lArachne  -L$(COREARBITER)/lib -lCoreArbiter -I$(PERFUTILS)/include $(PERFUTILS)/lib/libPerfUtils.a -pthread
-
+LIBS=-I$(ARACHNE)/include -I$(COREARBITER)/include  -I$(PERFUTILS)/include \
+	-L$(ARACHNE)/lib -lArachne -L$(COREARBITER)/lib -lCoreArbiter \
+	$(PERFUTILS)/lib/libPerfUtils.a -pthread
 
 BINS = ArachneCreateTest  NullYieldTest ArachneYieldTest ArachneCVTest \
 		ArachneBlockSignalTest ArachneBlockSignal_ContextSwitchTest \
-		ThreadTurnaround
+		ThreadTurnaround CoreRequest_Contended_Latency \
+		CoreRequest_Contended_Timeout_Latency CoreRequest_Noncontended_Latency
+
 FULL_BINS = $(patsubst %,$(BIN_DIR)/%,$(BINS))
 
 all: $(FULL_BINS)
