@@ -12,5 +12,4 @@ before executing any benchmarks.
 
 If you want to run the Core Arbiter benchmarks, then you must add an extra flag, since these take longer to run.
 
-
     scripts/RunAllTests.sh --runArbiterBenchmarks

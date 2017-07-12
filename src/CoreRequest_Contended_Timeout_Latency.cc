@@ -28,12 +28,12 @@ void highPriorityRequest(CoreArbiterClient& client) {
 
     for (int i = 0; i < NUM_TRIALS; i++) {
         printf("%d\n", i);
-        client.setNumCores({1,0,0,0,0,0,0,0});
+        client.setRequestedCores({1,0,0,0,0,0,0,0});
         while (client.getNumBlockedThreadsFromServer() == 0);
         while(client.getNumUnoccupiedCores() > 0);
 
         startCycles = Cycles::rdtsc();
-        client.setNumCores({2,0,0,0,0,0,0,0});
+        client.setRequestedCores({2,0,0,0,0,0,0,0});
         while(client.getNumBlockedThreads() == 1);
     }
 
@@ -58,7 +58,7 @@ void highPriorityBlock(CoreArbiterClient& client) {
 
 void lowPriorityExec(CoreArbiterClient& client) {
     std::vector<uint32_t> lowPriorityRequest = {0,0,0,0,0,0,0,1};
-    client.setNumCores(lowPriorityRequest);
+    client.setRequestedCores(lowPriorityRequest);
     client.blockUntilCoreAvailable();
 
     while (client.getNumProcessesOnServer() == 1);
@@ -77,7 +77,7 @@ int main(int argc, const char** argv){
 
         // Wait for the low priority thread to be put on a core
         while (client.getNumUnoccupiedCores() == 2);
-        client.setNumCores({2,0,0,0,0,0,0,0});
+        client.setRequestedCores({2,0,0,0,0,0,0,0});
 
         std::thread highPriorityThread1(highPriorityBlock, std::ref(client));
         std::thread highPriorityThread2(highPriorityRequest, std::ref(client));

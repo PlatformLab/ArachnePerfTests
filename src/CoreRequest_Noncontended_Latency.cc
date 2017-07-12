@@ -36,7 +36,7 @@ void coreExec(CoreArbiterClient& client) {
 void coreRequest(CoreArbiterClient& client) {
     std::vector<uint32_t> oneCoreRequest = {1,0,0,0,0,0,0,0};
 
-    client.setNumCores(oneCoreRequest);
+    client.setRequestedCores(oneCoreRequest);
     client.blockUntilCoreAvailable();
 
     std::vector<uint32_t> twoCoresRequest = {2,0,0,0,0,0,0,0};
@@ -45,10 +45,10 @@ void coreRequest(CoreArbiterClient& client) {
         while (client.getNumBlockedThreads() == 0);
 
         startCycles = Cycles::rdtsc();
-        client.setNumCores(twoCoresRequest);
+        client.setRequestedCores(twoCoresRequest);
         // When the number of blocked threads becomes zero, we release a core.
         while (client.getNumBlockedThreads() == 1);
-        client.setNumCores(oneCoreRequest);
+        client.setRequestedCores(oneCoreRequest);
     }
 }
 
