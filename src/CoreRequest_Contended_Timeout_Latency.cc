@@ -7,7 +7,7 @@
 #include "PerfUtils/Cycles.h"
 #include "PerfUtils/TimeTrace.h"
 #include "PerfUtils/Util.h"
-#include "Stats.h"
+#include "PerfUtils/Stats.h"
 
 using PerfUtils::TimeTrace;
 using PerfUtils::Cycles;

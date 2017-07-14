@@ -6,7 +6,7 @@
 #include "Arachne.h"
 #include "PerfUtils/Cycles.h"
 #include "PerfUtils/Util.h"
-#include "Stats.h"
+#include "PerfUtils/Stats.h"
 
 #define NUM_SAMPLES 1000000
 #define MEAN_DELAY 0.000002
