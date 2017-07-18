@@ -10,7 +10,7 @@ ARACHNE=../Arachne
 COREARBITER=../CoreArbiter
 LIBS=-I$(ARACHNE)/include -I$(COREARBITER)/include  -I$(PERFUTILS)/include \
 	-L$(ARACHNE)/lib -lArachne -L$(COREARBITER)/lib -lCoreArbiter \
-	$(PERFUTILS)/lib/libPerfUtils.a -pthread
+	$(PERFUTILS)/lib/libPerfUtils.a -lpcrecpp -pthread
 
 BINS = ArachneCreateTest  NullYieldTest ArachneYieldTest ArachneCVTest \
 		ArachneBlockSignalTest ArachneBlockSignal_ContextSwitchTest \
