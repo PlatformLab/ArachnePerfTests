@@ -20,59 +20,59 @@ std::atomic<uint64_t> startCycles(0);
 uint64_t arrayIndex = 0;
 uint64_t latencies[NUM_TRIALS];
 
-void highPriorityRequest(CoreArbiterClient& client,
+void highPriorityRequest(CoreArbiterClient* client,
                          volatile bool* lowPriorityRunning) {
-    client.blockUntilCoreAvailable();
+    client->blockUntilCoreAvailable();
 
     // Wait until the other high priority thread is running
-    while (client.getNumOwnedCores() < 2);
+    while (client->getNumOwnedCores() < 2);
 
     for (int i = 0; i < NUM_TRIALS; i++) {
-        client.setRequestedCores({1,0,0,0,0,0,0,0});
-        while (client.getNumBlockedThreadsFromServer() == 0);
+        client->setRequestedCores({1,0,0,0,0,0,0,0});
+        while (client->getNumBlockedThreadsFromServer() == 0);
         while (!(*lowPriorityRunning));
 
         startCycles = Cycles::rdtsc();
-        client.setRequestedCores({2,0,0,0,0,0,0,0});
-        while(client.getNumBlockedThreads() == 1);
+        client->setRequestedCores({2,0,0,0,0,0,0,0});
+        while(client->getNumBlockedThreads() == 1);
     }
 
-    client.unregisterThread();
+    client->unregisterThread();
 }
 
-void highPriorityBlock(CoreArbiterClient& client) {
-    client.blockUntilCoreAvailable();
+void highPriorityBlock(CoreArbiterClient* client) {
+    client->blockUntilCoreAvailable();
 
     // Wait until the other high priority thread is running
-    while (client.getNumOwnedCores() < 2);
+    while (client->getNumOwnedCores() < 2);
 
     for (int i = 0; i < NUM_TRIALS; i++) {
-        while (!client.mustReleaseCore());
-        client.blockUntilCoreAvailable();
+        while (!client->mustReleaseCore());
+        client->blockUntilCoreAvailable();
         uint64_t endCycles = Cycles::rdtsc();
         latencies[arrayIndex++] = endCycles - startCycles;
     }
 
-    client.unregisterThread();
+    client->unregisterThread();
 }
 
-void lowPriorityExec(CoreArbiterClient& client,
+void lowPriorityExec(CoreArbiterClient* client,
                      volatile bool* lowPriorityRunning) {
     std::vector<uint32_t> lowPriorityRequest = {0,0,0,0,0,0,0,1};
-    client.setRequestedCores(lowPriorityRequest);
-    client.blockUntilCoreAvailable();
+    client->setRequestedCores(lowPriorityRequest);
+    client->blockUntilCoreAvailable();
 
     // Wait for other process to join
-    while (client.getNumProcessesOnServer() == 1);
+    while (client->getNumProcessesOnServer() == 1);
 
     for (int i = 0; i < NUM_TRIALS; i++) {
-        while (!client.mustReleaseCore());
+        while (!client->mustReleaseCore());
         *lowPriorityRunning = false;
-        client.blockUntilCoreAvailable();
+        client->blockUntilCoreAvailable();
         *lowPriorityRunning = true;
     }
 
-    client.unregisterThread();
+    client->unregisterThread();
 }
 
 int main(int argc, const char** argv){
@@ -98,12 +98,12 @@ int main(int argc, const char** argv){
 
     pid_t pid = fork();
     if (pid == 0) {
-        CoreArbiterClient& client =
+        CoreArbiterClient* client =
             CoreArbiterClient::getInstance("/tmp/CoreArbiter/testsocket");
 
         // Wait for the low priority thread to be put on a core
-        while (client.getNumUnoccupiedCores() == 2);
-        client.setRequestedCores({2,0,0,0,0,0,0,0});
+        while (client->getNumUnoccupiedCores() == 2);
+        client->setRequestedCores({2,0,0,0,0,0,0,0});
 
         std::thread highPriorityThread1(highPriorityBlock, std::ref(client));
         std::thread highPriorityThread2(highPriorityRequest, std::ref(client),
@@ -116,7 +116,7 @@ int main(int argc, const char** argv){
         }
         printStatistics("core_request_cooperative_latencies", latencies, NUM_TRIALS, argc > 1 ? "data" : NULL);
     } else  {
-        CoreArbiterClient& client =
+        CoreArbiterClient* client =
             CoreArbiterClient::getInstance("/tmp/CoreArbiter/testsocket");
         lowPriorityExec(client, lowPriorityRunning);
 
