@@ -3,7 +3,7 @@
 #include <vector>
 #include <atomic>
 
-#include "Arachne.h"
+#include "Arachne/Arachne.h"
 #include "PerfUtils/Cycles.h"
 #include "PerfUtils/TimeTrace.h"
 #include "PerfUtils/Util.h"
