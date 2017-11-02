@@ -3,7 +3,7 @@
 #include <vector>
 #include <random>
 
-#include "Arachne.h"
+#include "Arachne/Arachne.h"
 #include "PerfUtils/Cycles.h"
 #include "PerfUtils/Util.h"
 #include "PerfUtils/Stats.h"
