@@ -1,3 +1,4 @@
+CXX ?= g++
 CXXFLAGS=-std=c++11 -O3 -Wall -Werror -Wformat=2 -Wextra -Wwrite-strings -Wno-unused-parameter -Wmissing-format-attribute -Wno-non-template-friend -Woverloaded-virtual -Wcast-qual -Wcast-align -Wconversion -fomit-frame-pointer
 
 # Output directories
@@ -22,7 +23,7 @@ FULL_BINS = $(patsubst %,$(BIN_DIR)/%,$(BINS))
 all: $(FULL_BINS)
 
 $(BIN_DIR)/% : $(SRC_DIR)/%.cc $(ARACHNE)/lib/libArachne.a | $(BIN_DIR)
-	g++  $(CXXFLAGS)  $< $(LIBS) -o $@
+	$(CXX)  $(CXXFLAGS)  $< $(LIBS) -o $@
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
