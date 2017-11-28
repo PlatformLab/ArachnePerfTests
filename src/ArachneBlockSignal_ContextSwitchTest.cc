@@ -52,12 +52,12 @@ void consumer(int cid) {
 
 int main(int argc, const char** argv){
     // Initialize the library
-    Arachne::init(&argc, argv);
+    Arachne::init(new CorePolicy(), &argc, argv);
 
     for (int i = 0; i < NUM_THREADS_IN_CYCLE; i++) {
-        tids[i] = Arachne::createThreadOnCore(1, consumer,  i);
+        tids[i] = Arachne::createThreadOnCore(0, 1, consumer,  i);
     }
-	Arachne::createThreadOnCore(0, producer);
+	Arachne::createThreadOnCore(0, 0, producer);
 
     printf("Created Producer and consumer threads\n");
     fflush(stdout);
