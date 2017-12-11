@@ -45,7 +45,7 @@ int realMain() {
         while (Cycles::rdtsc() < signalTime);
         PerfUtils::Util::serialize();
         uint64_t creationTime = Cycles::rdtsc();
-        Arachne::ThreadId id = Arachne::createThreadOnCore(1, task, creationTime);
+        Arachne::ThreadId id = Arachne::createThreadOnCore(0, 1, task, creationTime);
         Arachne::join(id);
     }
     FILE* devNull = fopen("/dev/null", "w");
@@ -66,7 +66,7 @@ int main(int argc, const char** argv) {
     Arachne::maxNumCores = 2;
     Arachne::disableLoadEstimation = true;
     Arachne::Logger::setLogLevel(Arachne::WARNING);
-    Arachne::init(&argc, argv);
+    Arachne::init(new CorePolicy(), &argc, argv);
 
     int threadListLength = 0;
     if (argc > 1) threadListLength = atoi(argv[1]);
@@ -74,9 +74,9 @@ int main(int argc, const char** argv) {
     // Add a bunch of threads to the run list that will never run again, to
     // check for interference with creation.
     for (int i = 0; i < threadListLength; i++)
-        Arachne::createThreadOnCore(1, sleeper);
+        Arachne::createThreadOnCore(0, 1, sleeper);
 
-    Arachne::createThreadOnCore(0, realMain);
+    Arachne::createThreadOnCore(0, 0, realMain);
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);

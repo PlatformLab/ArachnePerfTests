@@ -34,8 +34,8 @@ int main(int argc, const char** argv){
     // Initialize the library
     Arachne::minNumCores = 2;
     Arachne::maxNumCores = 2;
-    Arachne::init(&argc, argv);
-    Arachne::createThread(realMain);
+    Arachne::init(new CorePolicy(), &argc, argv);
+    Arachne::createThread(0, realMain);
     // Must be the last call
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)
