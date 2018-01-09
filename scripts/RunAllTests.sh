@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Go to the correct directory
+dirPATH=$(dirname $(dirname $(readlink -f $0)))
+cd ${dirPATH}
 make
 
 # Threading primitive tests
