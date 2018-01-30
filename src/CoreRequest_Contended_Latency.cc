@@ -86,7 +86,12 @@ int main(int argc, const char** argv){
         return -1;
     }
 
-    ftruncate(sharedMemFd, sizeof(bool));
+    if (ftruncate(sharedMemFd, sizeof(bool)) == -1) {
+        fprintf(stderr, "Error truncating sharedMemFd: %s\n", 
+                strerror(errno));
+        return -1;
+    }
+
     volatile bool* lowPriorityRunning = (bool*)mmap(NULL, getpagesize(),
                                            PROT_READ | PROT_WRITE, MAP_SHARED,
                                            sharedMemFd, 0);
