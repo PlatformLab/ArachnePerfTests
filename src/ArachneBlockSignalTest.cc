@@ -70,18 +70,18 @@ int main(int argc, const char** argv){
     Arachne::maxNumCores = 2;
     Arachne::disableLoadEstimation = true;
     Arachne::Logger::setLogLevel(Arachne::WARNING);
-    Arachne::init(new CorePolicy(), &argc, argv);
+    Arachne::init(&argc, argv);
 
     int threadListLength = 0;
     if (argc > 1) threadListLength = atoi(argv[1]);
 
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++)
-        Arachne::createThreadOnCore(0, 1, sleeper);
+        Arachne::createThreadOnCore(1, sleeper);
 
     // Add some work
-	consumerId = Arachne::createThreadOnCore(0, 1, consumer);
-	Arachne::createThreadOnCore(0, 0, producer);
+	consumerId = Arachne::createThreadOnCore(1, consumer);
+	Arachne::createThreadOnCore(0, producer);
     // Must be the last call
     Arachne::waitForTermination();
 

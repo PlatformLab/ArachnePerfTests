@@ -33,7 +33,7 @@ int realMain() {
     // Page in our data store
     memset(latencies, 0, NUM_SAMPLES*sizeof(uint64_t));
 
-    Arachne::ThreadId id = Arachne::createThreadOnCore(0, 0, yielder);
+    Arachne::ThreadId id = Arachne::createThreadOnCore(0, yielder);
     for (int i = 0; i < NUM_SAMPLES; i++) {
         uint64_t beforeYield = Cycles::rdtsc();
         Arachne::yield();
@@ -48,8 +48,8 @@ int main(int argc, const char** argv){
     // Initialize the library
     Arachne::minNumCores = 2;
     Arachne::maxNumCores = 2;
-    Arachne::init(new CorePolicy(), &argc, argv);
-    Arachne::createThreadOnCore(0, 0, realMain);
+    Arachne::init(&argc, argv);
+    Arachne::createThreadOnCore(0, realMain);
     // Must be the last call
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)

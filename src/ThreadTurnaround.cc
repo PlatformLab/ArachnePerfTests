@@ -44,8 +44,8 @@ int realMain() {
     uint64_t k = 0;
     for (int i = 0; i < NUM_SAMPLES; i++) {
         // Start both
-        Arachne::createThreadOnCore(0, 1, exitingTask);
-        Arachne::ThreadId id = Arachne::createThreadOnCore(0, 1, startingTask);
+        Arachne::createThreadOnCore(1, exitingTask);
+        Arachne::ThreadId id = Arachne::createThreadOnCore(1, startingTask);
         // Awaken the first thread.
         exitBlocker.notify();
         // Wait for the exit of the second thread
@@ -69,9 +69,9 @@ int main(int argc, const char** argv) {
     Arachne::maxNumCores = 2;
     Arachne::disableLoadEstimation = true;
     Arachne::Logger::setLogLevel(Arachne::WARNING);
-    Arachne::init(new CorePolicy(), &argc, argv);
+    Arachne::init(&argc, argv);
 
-    Arachne::createThreadOnCore(0, 0, realMain);
+    Arachne::createThreadOnCore(0, realMain);
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
