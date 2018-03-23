@@ -104,7 +104,7 @@ int main(int argc, const char** argv){
     pid_t pid = fork();
     if (pid == 0) {
         CoreArbiterClient* client =
-            CoreArbiterClient::getInstance("/tmp/CoreArbiter/testsocket");
+            CoreArbiterClient::getInstance();
 
         // Wait for the low priority thread to be put on a core
         while (client->getNumUnoccupiedCores() == 2);
@@ -122,7 +122,7 @@ int main(int argc, const char** argv){
         printStatistics("core_request_cooperative_latencies", latencies, NUM_TRIALS, argc > 1 ? "data" : NULL);
     } else  {
         CoreArbiterClient* client =
-            CoreArbiterClient::getInstance("/tmp/CoreArbiter/testsocket");
+            CoreArbiterClient::getInstance();
         lowPriorityExec(client, lowPriorityRunning);
 
         wait();

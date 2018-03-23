@@ -55,7 +55,7 @@ void coreRequest(CoreArbiterClient* client) {
 int main(int argc, const char** argv){
     Logger::setLogLevel(ERROR);
     CoreArbiterClient* client =
-        CoreArbiterClient::getInstance("/tmp/CoreArbiter/testsocket");
+        CoreArbiterClient::getInstance();
     std::thread requestThread(coreRequest, std::ref(client));
     while (client->getNumOwnedCores() == 0);
 
