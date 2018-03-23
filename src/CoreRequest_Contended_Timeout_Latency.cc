@@ -27,7 +27,6 @@ void highPriorityRequest(CoreArbiterClient* client) {
     while (client->getNumOwnedCores() < 2);
 
     for (int i = 0; i < NUM_TRIALS; i++) {
-        printf("%d\n", i);
         client->setRequestedCores({1,0,0,0,0,0,0,0});
         while (client->getNumBlockedThreadsFromServer() == 0);
         while(client->getNumUnoccupiedCores() > 0);
