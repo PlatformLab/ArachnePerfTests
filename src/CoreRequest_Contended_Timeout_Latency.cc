@@ -14,6 +14,15 @@ using PerfUtils::Cycles;
 using CoreArbiter::CoreArbiterClient;
 using namespace CoreArbiter;
 
+
+/**
+ * This benchmark measures the minimum amount of time it takes for the
+ * CoreArbiter to reclaim a core from an uncooperative application and give it
+ * to another. To create the expected contention, the Core Arbiter MUST be
+ * started with only two cores.
+ */
+
+
 #define NUM_TRIALS 10000
 
 std::atomic<uint64_t> startCycles(0);
