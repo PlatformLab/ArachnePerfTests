@@ -4,8 +4,8 @@
 
 #include "Arachne/Arachne.h"
 #include "PerfUtils/Cycles.h"
-#include "PerfUtils/Util.h"
 #include "PerfUtils/Stats.h"
+#include "PerfUtils/Util.h"
 
 #define NUM_SAMPLES 1000000
 
@@ -21,38 +21,43 @@ Arachne::ThreadId producerId;
 
 std::atomic<bool> producerHasStarted;
 
-void producer() {
+void
+producer() {
     producerHasStarted = true;
-	for (int i = 0; i < NUM_SAMPLES; i++) {
+    for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::block();
         mutex.lock();
         beforeNotify = Cycles::rdtsc();
-	    productIsReady.notifyOne();
+        productIsReady.notifyOne();
         mutex.unlock();
-	}
+    }
 }
 
-void consumer() {
-	mutex.lock();
-	for (int i = 0; i < NUM_SAMPLES; i++) {
+void
+consumer() {
+    mutex.lock();
+    for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::signal(producerId);
         productIsReady.wait(mutex);
         uint64_t wakeupTime = Cycles::rdtsc();
         PerfUtils::Util::serialize();
         latencies[i] = wakeupTime - beforeNotify;
-	}
-	mutex.unlock();
+    }
+    mutex.unlock();
     Arachne::join(producerId);
     Arachne::shutDown();
 }
 
-void sleeper() {
+void
+sleeper() {
     Arachne::block();
 }
 
-int main(int argc, const char** argv){
+int
+main(int argc, const char** argv) {
     int threadListLength = 0;
-    if (argc > 1) threadListLength = atoi(argv[1]);
+    if (argc > 1)
+        threadListLength = atoi(argv[1]);
     // Initialize the library
     Arachne::minNumCores = 2;
     Arachne::maxNumCores = 2;
@@ -64,12 +69,13 @@ int main(int argc, const char** argv){
     }
 
     // Add some work
-	producerId = Arachne::createThreadOnCore(0, producer);
-    asm volatile ("" : : : "memory");
+    producerId = Arachne::createThreadOnCore(0, producer);
+    asm volatile("" : : : "memory");
     // Wait for producer to start running before starting consumer, to mitigate
     // a race where the consumer signals before initialization of the kernel
     // thread that runs the producer.
-    while (!producerHasStarted);
+    while (!producerHasStarted)
+        ;
     if (argc > 1)
         Arachne::createThreadOnCore(0, consumer);
     else
@@ -79,6 +85,7 @@ int main(int argc, const char** argv){
 
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
-    printStatistics("Condition Variable Wakeup", latencies, NUM_SAMPLES, "data");
+    printStatistics("Condition Variable Wakeup", latencies, NUM_SAMPLES,
+                    "data");
     return 0;
 }

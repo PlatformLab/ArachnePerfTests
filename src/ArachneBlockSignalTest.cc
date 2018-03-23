@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <vector>
 #include <atomic>
 #include <random>
+#include <vector>
 
 #include "Arachne/Arachne.h"
 #include "PerfUtils/Cycles.h"
-#include "PerfUtils/Util.h"
 #include "PerfUtils/Stats.h"
-
+#include "PerfUtils/Util.h"
 
 using PerfUtils::Cycles;
 
@@ -16,7 +15,7 @@ using PerfUtils::Cycles;
 #define MEAN_DELAY 0.000002
 
 namespace Arachne {
-    extern bool disableLoadEstimation;
+extern bool disableLoadEstimation;
 }
 
 volatile int consumerIsReady = 0;
@@ -27,17 +26,21 @@ std::atomic<uint64_t> beforeSignal;
 // This is used for signalling
 Arachne::ThreadId consumerId;
 
-void producer() {
+void
+producer() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> uniformIG(0, MEAN_DELAY * 2);
 
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        while (!consumerIsReady);
+        while (!consumerIsReady)
+            ;
         consumerIsReady = 0;
         // Wait a random interval for consumer to actually sleep
-        uint64_t signalTime = Cycles::rdtsc() + Cycles::fromSeconds(uniformIG(gen));
-        while (Cycles::rdtsc() < signalTime);
+        uint64_t signalTime =
+            Cycles::rdtsc() + Cycles::fromSeconds(uniformIG(gen));
+        while (Cycles::rdtsc() < signalTime)
+            ;
 
         PerfUtils::Util::serialize();
         beforeSignal = Cycles::rdtsc();
@@ -47,24 +50,28 @@ void producer() {
     Arachne::shutDown();
 }
 
-void consumer() {
+void
+consumer() {
     // Tell the producer we are ready.
     consumerIsReady = 1;
-	for (int i = 0; i < NUM_SAMPLES; i++) {
+    for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::block();
         uint64_t stopTime = Cycles::rdtsc();
         PerfUtils::Util::serialize();
         latencies[i] = stopTime - beforeSignal;
-        while (consumerIsReady);
-		consumerIsReady = 1;
-	}
+        while (consumerIsReady)
+            ;
+        consumerIsReady = 1;
+    }
 }
 
-void sleeper() {
+void
+sleeper() {
     Arachne::block();
 }
 
-int main(int argc, const char** argv){
+int
+main(int argc, const char** argv) {
     // Initialize the library
     Arachne::minNumCores = 2;
     Arachne::maxNumCores = 2;
@@ -73,15 +80,16 @@ int main(int argc, const char** argv){
     Arachne::init(&argc, argv);
 
     int threadListLength = 0;
-    if (argc > 1) threadListLength = atoi(argv[1]);
+    if (argc > 1)
+        threadListLength = atoi(argv[1]);
 
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++)
         Arachne::createThreadOnCore(1, sleeper);
 
     // Add some work
-	consumerId = Arachne::createThreadOnCore(1, consumer);
-	Arachne::createThreadOnCore(0, producer);
+    consumerId = Arachne::createThreadOnCore(1, consumer);
+    Arachne::createThreadOnCore(0, producer);
     // Must be the last call
     Arachne::waitForTermination();
 

@@ -4,8 +4,8 @@
 
 #include "Arachne/Arachne.h"
 #include "PerfUtils/Cycles.h"
-#include "PerfUtils/Util.h"
 #include "PerfUtils/Stats.h"
+#include "PerfUtils/Util.h"
 
 #define NUM_SAMPLES 1000000
 
@@ -14,24 +14,26 @@ using PerfUtils::Cycles;
 uint64_t latencies[NUM_SAMPLES];
 
 /**
-  * This benchmark computes a median time for a yield in one thread to return
-  * in another thread in the same core.
-  * Note that this benchmark has no direct analog in golang or std::thread,
-  * since we cannot finely control core placement in these systems.
-  *
-  * Alternatively, we could measure the time it takes to return to the original
-  * thread, but this seems less intuitive and still would not match with
-  * std::thread or Golang.
-  */
-void yielder() {
+ * This benchmark computes a median time for a yield in one thread to return
+ * in another thread in the same core.
+ * Note that this benchmark has no direct analog in golang or std::thread,
+ * since we cannot finely control core placement in these systems.
+ *
+ * Alternatively, we could measure the time it takes to return to the original
+ * thread, but this seems less intuitive and still would not match with
+ * std::thread or Golang.
+ */
+void
+yielder() {
     for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::yield();
     }
 }
 
-int realMain() {
+int
+realMain() {
     // Page in our data store
-    memset(latencies, 0, NUM_SAMPLES*sizeof(uint64_t));
+    memset(latencies, 0, NUM_SAMPLES * sizeof(uint64_t));
 
     Arachne::ThreadId id = Arachne::createThreadOnCore(0, yielder);
     for (int i = 0; i < NUM_SAMPLES; i++) {
@@ -44,7 +46,8 @@ int realMain() {
     return 0;
 }
 
-int main(int argc, const char** argv){
+int
+main(int argc, const char** argv) {
     // Initialize the library
     Arachne::minNumCores = 2;
     Arachne::maxNumCores = 2;
