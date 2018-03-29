@@ -21,14 +21,18 @@ uint64_t latencies[NUM_SAMPLES];
 static uint64_t arrayIndex = 0;
 
 std::atomic<uint64_t> exitTime;
-Arachne::Semaphore exitBlocker;
+std::atomic<bool> canExit;
 
 static int threadListLength = 0;
+
+std::atomic<bool> exitStarted(false);
 
 void
 exitingTask() {
     // Wait until the other task is ready
-    exitBlocker.wait();
+    exitStarted.store(true);
+    while (!canExit)
+        ;
     exitTime = Cycles::rdtsc();
 }
 
@@ -58,19 +62,29 @@ realMain() {
         Arachne::createThreadOnCore(1, sleeper);
 
     // Awaken the exitingTask thread and wait it to exit
-    exitBlocker.notify();
+    canExit.store(true);
     Arachne::join(id);
+
+    exitStarted.store(false);
+    canExit.store(false);
 
     // Do some extra work before starting the next thread.
     uint64_t k = 0;
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        // Start both
+        // Start exiting task
         Arachne::createThreadOnCore(1, exitingTask);
+        // Make sure that exiting task has actually started running before
+        // creating startingTask. This ensures that startTime cannot run before
+        // exitingTask.
+        while (!exitStarted)
+            ;
         id = Arachne::createThreadOnCore(1, startingTask);
-        // Awaken the first thread.
-        exitBlocker.notify();
+        // Allow the first thread to continue
+        canExit.store(true);
         // Wait for the exit of the second thread
         Arachne::join(id);
+        exitStarted.store(false);
+        canExit.store(false);
     }
     FILE* devNull = fopen("/dev/null", "w");
     fprintf(devNull, "%lu\n", k);
