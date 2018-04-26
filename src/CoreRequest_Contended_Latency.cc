@@ -21,6 +21,13 @@ using namespace CoreArbiter;
  * only two cores.
  */
 
+// Uncomment the following line to dump the TimeTraces from the Core Arbiter
+// client library. Note that this is only useful if you compile the CoreArbiter
+// with TimeTraces enabled. Further note that the duplicate calls to
+// TimeTrace::print() below are intentional; they occur in two different
+// processes.
+// #define TIME_TRACE 1
+
 #define NUM_TRIALS 1000000
 
 std::atomic<uint64_t> startCycles(0);
@@ -138,10 +145,18 @@ main(int argc, const char** argv) {
         }
         printStatistics("core_request_cooperative_latencies", latencies,
                         NUM_TRIALS, argc > 1 ? "data" : NULL);
+#if TIME_TRACE
+        TimeTrace::setOutputFileName("CoreRequest_Contended_HighPriority.log");
+        TimeTrace::print();
+#endif
     } else {
         CoreArbiterClient* client = CoreArbiterClient::getInstance();
         lowPriorityExec(client, lowPriorityRunning);
 
         wait();
+#if TIME_TRACE
+        TimeTrace::setOutputFileName("CoreRequest_Contended_LowPriority.log");
+        TimeTrace::print();
+#endif
     }
 }
