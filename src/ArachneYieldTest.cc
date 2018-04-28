@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "Arachne/Arachne.h"
+#include "PerfUtils/TimeTrace.h"
 #include "PerfUtils/Cycles.h"
 #include "PerfUtils/Stats.h"
 #include "PerfUtils/Util.h"
@@ -10,8 +11,8 @@
 #define NUM_SAMPLES 1000000
 
 using PerfUtils::Cycles;
+using PerfUtils::TimeTrace;
 
-uint64_t latencies[NUM_SAMPLES];
 
 /**
  * This benchmark computes a median time for a yield in one thread to return
@@ -23,10 +24,34 @@ uint64_t latencies[NUM_SAMPLES];
  * thread, but this seems less intuitive and still would not match with
  * std::thread or Golang.
  */
+
+// Uncomment the following line to enable TimeTraces.
+// #define TIME_TRACE 1
+
+// Provides a cleaner way of invoking TimeTrace::record, with the code
+// conditionally compiled in or out by the TIME_TRACE #ifdef. Arguments
+// are made uint64_t (as opposed to uin32_t) so the caller doesn't have to
+// frequently cast their 64-bit arguments into uint32_t explicitly: we will
+// help perform the casting internally.
+static inline void
+timeTrace(const char* format,
+        uint64_t arg0 = 0, uint64_t arg1 = 0, uint64_t arg2 = 0,
+        uint64_t arg3 = 0)
+{
+#if TIME_TRACE
+    TimeTrace::record(format, uint32_t(arg0), uint32_t(arg1),
+            uint32_t(arg2), uint32_t(arg3));
+#endif
+}
+
+uint64_t latencies[NUM_SAMPLES];
+
 void
 yielder() {
     for (int i = 0; i < NUM_SAMPLES; i++) {
+        timeTrace("About to yield in thread 2");
         Arachne::yield();
+        timeTrace("Returned from yield in thread 2");
     }
 }
 
@@ -38,7 +63,9 @@ realMain() {
     Arachne::ThreadId id = Arachne::createThreadOnCore(0, yielder);
     for (int i = 0; i < NUM_SAMPLES; i++) {
         uint64_t beforeYield = Cycles::rdtsc();
+        timeTrace("About to yield in thread 1");
         Arachne::yield();
+        timeTrace("Returned from yield in thread 1");
         latencies[i] = (Cycles::rdtsc() - beforeYield) / 2;
     }
     Arachne::join(id);
@@ -58,4 +85,8 @@ main(int argc, const char** argv) {
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
     printStatistics("Thread Yield Latency", latencies, NUM_SAMPLES, "data");
+#if TIME_TRACE
+        TimeTrace::setOutputFileName("ArachneYieldTest_TimeTrace.log");
+        TimeTrace::print();
+#endif
 }
