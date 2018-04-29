@@ -13,7 +13,7 @@
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
-#define NUM_SAMPLES 1000000
+#define NUM_SAMPLES 10000000
 #define MEAN_DELAY 0.000002
 
 // Uncomment the following line to enable TimeTraces.
