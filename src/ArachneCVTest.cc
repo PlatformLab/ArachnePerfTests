@@ -61,6 +61,7 @@ main(int argc, const char** argv) {
     // Initialize the library
     Arachne::minNumCores = 2;
     Arachne::maxNumCores = 2;
+    Arachne::disableLoadEstimation = true;
     Arachne::init(&argc, argv);
 
     // Add a bunch of threads to the run list that will never get to run again.
