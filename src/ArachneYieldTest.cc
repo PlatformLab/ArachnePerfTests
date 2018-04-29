@@ -62,11 +62,11 @@ realMain() {
 
     Arachne::ThreadId id = Arachne::createThreadOnCore(0, yielder);
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        uint64_t beforeYield = Cycles::rdtscp();
+        uint64_t beforeYield = Cycles::rdtsc();
         timeTrace("About to yield in thread 1");
         Arachne::yield();
         timeTrace("Returned from yield in thread 1");
-        latencies[i] = (Cycles::rdtscp() - beforeYield) / 2;
+        latencies[i] = (Cycles::rdtsc() - beforeYield) / 2;
     }
     Arachne::join(id);
     Arachne::shutDown();

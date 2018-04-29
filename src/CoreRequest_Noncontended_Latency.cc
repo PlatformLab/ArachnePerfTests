@@ -28,7 +28,7 @@ void
 coreExec(CoreArbiterClient* client) {
     for (int i = 0; i < NUM_TRIALS; i++) {
         client->blockUntilCoreAvailable();
-        uint64_t endCycles = Cycles::rdtscp();
+        uint64_t endCycles = Cycles::rdtsc();
         latencies[arrayIndex++] = endCycles - startCycles;
         while (!client->mustReleaseCore())
             ;
@@ -49,7 +49,7 @@ coreRequest(CoreArbiterClient* client) {
         while (client->getNumBlockedThreads() == 0)
             ;
 
-        startCycles = Cycles::rdtscp();
+        startCycles = Cycles::rdtsc();
         client->setRequestedCores(twoCoresRequest);
         // When the number of blocked threads becomes zero, we release a core.
         while (client->getNumBlockedThreads() == 1)

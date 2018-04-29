@@ -50,7 +50,7 @@ highPriorityRequest(CoreArbiterClient* client,
         while (!(*lowPriorityRunning))
             ;
 
-        startCycles = Cycles::rdtscp();
+        startCycles = Cycles::rdtsc();
         client->setRequestedCores({2, 0, 0, 0, 0, 0, 0, 0});
         while (client->getNumBlockedThreads() == 1)
             ;
@@ -71,7 +71,7 @@ highPriorityBlock(CoreArbiterClient* client) {
         while (!client->mustReleaseCore())
             ;
         client->blockUntilCoreAvailable();
-        uint64_t endCycles = Cycles::rdtscp();
+        uint64_t endCycles = Cycles::rdtsc();
         latencies[arrayIndex++] = endCycles - startCycles;
     }
 

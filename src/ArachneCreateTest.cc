@@ -22,7 +22,7 @@ static uint64_t arrayIndex = 0;
 
 void
 task(uint64_t creationTime) {
-    uint64_t startTime = Cycles::rdtscp();
+    uint64_t startTime = Cycles::rdtsc();
     PerfUtils::Util::serialize();
     uint64_t latency = startTime - creationTime;
     latencies[arrayIndex++] = latency;
@@ -43,11 +43,11 @@ realMain() {
     for (int i = 0; i < NUM_SAMPLES; i++) {
         // Wait a random interval before next creation
         uint64_t signalTime =
-            Cycles::rdtscp() + Cycles::fromSeconds(uniformIG(gen));
-        while (Cycles::rdtscp() < signalTime)
+            Cycles::rdtsc() + Cycles::fromSeconds(uniformIG(gen));
+        while (Cycles::rdtsc() < signalTime)
             ;
         PerfUtils::Util::serialize();
-        uint64_t creationTime = Cycles::rdtscp();
+        uint64_t creationTime = Cycles::rdtsc();
         Arachne::ThreadId id =
             Arachne::createThreadOnCore(1, task, creationTime);
         Arachne::join(id);

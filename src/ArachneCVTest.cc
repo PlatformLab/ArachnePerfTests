@@ -27,7 +27,7 @@ producer() {
     for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::block();
         mutex.lock();
-        beforeNotify = Cycles::rdtscp();
+        beforeNotify = Cycles::rdtsc();
         productIsReady.notifyOne();
         mutex.unlock();
     }
@@ -39,7 +39,7 @@ consumer() {
     for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::signal(producerId);
         productIsReady.wait(mutex);
-        uint64_t wakeupTime = Cycles::rdtscp();
+        uint64_t wakeupTime = Cycles::rdtsc();
         PerfUtils::Util::serialize();
         latencies[i] = wakeupTime - beforeNotify;
     }
