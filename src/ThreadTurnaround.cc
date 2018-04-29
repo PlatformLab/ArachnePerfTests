@@ -33,12 +33,12 @@ exitingTask() {
     exitStarted.store(true);
     while (!canExit)
         ;
-    exitTime = Cycles::rdtsc();
+    exitTime = Cycles::rdtscp();
 }
 
 void
 startingTask() {
-    uint64_t startTime = Cycles::rdtsc();
+    uint64_t startTime = Cycles::rdtscp();
     uint64_t latency = startTime - exitTime;
     latencies[arrayIndex++] = latency;
 }

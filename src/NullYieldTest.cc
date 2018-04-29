@@ -23,9 +23,9 @@ realMain() {
     memset(latencies, 0, NUM_SAMPLES * sizeof(uint64_t));
 
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        uint64_t beforeYield = Cycles::rdtsc();
+        uint64_t beforeYield = Cycles::rdtscp();
         Arachne::yield();
-        latencies[i] = Cycles::rdtsc() - beforeYield;
+        latencies[i] = Cycles::rdtscp() - beforeYield;
     }
     Arachne::shutDown();
     return 0;

@@ -38,12 +38,12 @@ producer() {
         consumerIsReady = 0;
         // Wait a random interval for consumer to actually sleep
         uint64_t signalTime =
-            Cycles::rdtsc() + Cycles::fromSeconds(uniformIG(gen));
-        while (Cycles::rdtsc() < signalTime)
+            Cycles::rdtscp() + Cycles::fromSeconds(uniformIG(gen));
+        while (Cycles::rdtscp() < signalTime)
             ;
 
         PerfUtils::Util::serialize();
-        beforeSignal = Cycles::rdtsc();
+        beforeSignal = Cycles::rdtscp();
         Arachne::signal(consumerId);
     }
     Arachne::join(consumerId);
@@ -56,7 +56,7 @@ consumer() {
     consumerIsReady = 1;
     for (int i = 0; i < NUM_SAMPLES; i++) {
         Arachne::block();
-        uint64_t stopTime = Cycles::rdtsc();
+        uint64_t stopTime = Cycles::rdtscp();
         PerfUtils::Util::serialize();
         latencies[i] = stopTime - beforeSignal;
         while (consumerIsReady)
