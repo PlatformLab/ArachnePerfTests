@@ -8,7 +8,7 @@
 #include "PerfUtils/Stats.h"
 #include "PerfUtils/Util.h"
 
-#define NUM_SAMPLES 1000000
+#define NUM_SAMPLES 10000000
 
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
@@ -78,6 +78,7 @@ main(int argc, const char** argv) {
     // Initialize the library
     Arachne::minNumCores = 2;
     Arachne::maxNumCores = 2;
+    Arachne::disableLoadEstimation = true;
     Arachne::init(&argc, argv);
     Arachne::createThreadOnCore(0, realMain);
     // Must be the last call
