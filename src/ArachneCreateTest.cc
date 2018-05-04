@@ -8,7 +8,7 @@
 #include "PerfUtils/Stats.h"
 #include "PerfUtils/Util.h"
 
-#define NUM_SAMPLES 1000000
+#define NUM_SAMPLES 10000000
 #define MEAN_DELAY 0.000002
 
 namespace Arachne {
