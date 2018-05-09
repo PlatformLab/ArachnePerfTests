@@ -107,13 +107,15 @@ main(int argc, const char** argv) {
     if (argc > 1)
         threadListLength = atoi(argv[1]);
 
+    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
+    int core1 = Arachne::getCorePolicy()->getCores(0)[1];
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++)
-        Arachne::createThreadOnCore(1, sleeper);
+        Arachne::createThreadOnCore(core1, sleeper);
 
     // Add some work
-    consumerId = Arachne::createThreadOnCore(1, consumer);
-    Arachne::createThreadOnCore(0, producer);
+    consumerId = Arachne::createThreadOnCore(core1, consumer);
+    Arachne::createThreadOnCore(core0, producer);
     // Must be the last call
     Arachne::waitForTermination();
 

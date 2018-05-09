@@ -33,6 +33,9 @@ realMain() {
     // Page in our data store
     memset(latencies, 0, NUM_SAMPLES * sizeof(uint64_t));
 
+    // Get the physical core ID of the core we are not on.
+    int core1 = Arachne::getCorePolicy()->getCores(0)[1];
+
     // Set up random smoothing.
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -49,7 +52,7 @@ realMain() {
         PerfUtils::Util::serialize();
         uint64_t creationTime = Cycles::rdtsc();
         Arachne::ThreadId id =
-            Arachne::createThreadOnCore(1, task, creationTime);
+            Arachne::createThreadOnCore(core1, task, creationTime);
         Arachne::join(id);
     }
     FILE* devNull = fopen("/dev/null", "w");
@@ -78,12 +81,14 @@ main(int argc, const char** argv) {
     if (argc > 1)
         threadListLength = atoi(argv[1]);
 
+    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
+    int core1 = Arachne::getCorePolicy()->getCores(0)[1];
     // Add a bunch of threads to the run list that will never run again, to
     // check for interference with creation.
     for (int i = 0; i < threadListLength; i++)
-        Arachne::createThreadOnCore(1, sleeper);
+        Arachne::createThreadOnCore(core1, sleeper);
 
-    Arachne::createThreadOnCore(0, realMain);
+    Arachne::createThreadOnCore(core0, realMain);
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);

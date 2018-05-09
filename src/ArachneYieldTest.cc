@@ -60,7 +60,8 @@ realMain() {
     // Page in our data store
     memset(latencies, 0, NUM_SAMPLES * sizeof(uint64_t));
 
-    Arachne::ThreadId id = Arachne::createThreadOnCore(0, yielder);
+    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
+    Arachne::ThreadId id = Arachne::createThreadOnCore(core0, yielder);
     for (int i = 0; i < NUM_SAMPLES; i++) {
         uint64_t beforeYield = Cycles::rdtsc();
         timeTrace("About to yield in thread 1");
@@ -80,7 +81,8 @@ main(int argc, const char** argv) {
     Arachne::maxNumCores = 2;
     Arachne::disableLoadEstimation = true;
     Arachne::init(&argc, argv);
-    Arachne::createThreadOnCore(0, realMain);
+    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
+    Arachne::createThreadOnCore(core0, realMain);
     // Must be the last call
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)

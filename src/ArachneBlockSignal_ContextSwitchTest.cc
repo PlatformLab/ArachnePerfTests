@@ -54,10 +54,12 @@ main(int argc, const char** argv) {
     // Initialize the library
     Arachne::init(&argc, argv);
 
+    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
+    int core1 = Arachne::getCorePolicy()->getCores(0)[1];
     for (int i = 0; i < NUM_THREADS_IN_CYCLE; i++) {
-        tids[i] = Arachne::createThreadOnCore(1, consumer, i);
+        tids[i] = Arachne::createThreadOnCore(core1, consumer, i);
     }
-    Arachne::createThreadOnCore(0, producer);
+    Arachne::createThreadOnCore(core0, producer);
 
     printf("Created Producer and consumer threads\n");
     fflush(stdout);

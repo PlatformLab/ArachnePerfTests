@@ -53,13 +53,15 @@ realMain() {
     // Page in our data store
     memset(latencies, 0, NUM_SAMPLES * sizeof(uint64_t));
 
+    int core1 = Arachne::getCorePolicy()->getCores(0)[1];
+
     // Start one thread before creating sleeper threads to reserve slot 0
-    Arachne::ThreadId id = Arachne::createThreadOnCore(1, exitingTask);
+    Arachne::ThreadId id = Arachne::createThreadOnCore(core1, exitingTask);
 
     // Add a bunch of threads to the run list that will never run again, to
     // check for interference with creation and turn around.
     for (int i = 0; i < threadListLength; i++)
-        Arachne::createThreadOnCore(1, sleeper);
+        Arachne::createThreadOnCore(core1, sleeper);
 
     // Awaken the exitingTask thread and wait it to exit
     canExit.store(true);
@@ -72,13 +74,13 @@ realMain() {
     uint64_t k = 0;
     for (int i = 0; i < NUM_SAMPLES; i++) {
         // Start exiting task
-        Arachne::createThreadOnCore(1, exitingTask);
+        Arachne::createThreadOnCore(core1, exitingTask);
         // Make sure that exiting task has actually started running before
         // creating startingTask. This ensures that startTime cannot run before
         // exitingTask.
         while (!exitStarted)
             ;
-        id = Arachne::createThreadOnCore(1, startingTask);
+        id = Arachne::createThreadOnCore(core1, startingTask);
         // Allow the first thread to continue
         canExit.store(true);
         // Wait for the exit of the second thread
@@ -109,8 +111,8 @@ main(int argc, const char** argv) {
 
     if (argc > 1)
         threadListLength = atoi(argv[1]);
-
-    Arachne::createThreadOnCore(0, realMain);
+    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
+    Arachne::createThreadOnCore(core0, realMain);
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);

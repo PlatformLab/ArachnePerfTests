@@ -64,13 +64,15 @@ main(int argc, const char** argv) {
     Arachne::disableLoadEstimation = true;
     Arachne::init(&argc, argv);
 
+    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
+    int core1 = Arachne::getCorePolicy()->getCores(0)[1];
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++) {
-        Arachne::createThreadOnCore(1, sleeper);
+        Arachne::createThreadOnCore(core1, sleeper);
     }
 
     // Add some work
-    producerId = Arachne::createThreadOnCore(0, producer);
+    producerId = Arachne::createThreadOnCore(core0, producer);
     asm volatile("" : : : "memory");
     // Wait for producer to start running before starting consumer, to mitigate
     // a race where the consumer signals before initialization of the kernel
@@ -78,9 +80,9 @@ main(int argc, const char** argv) {
     while (!producerHasStarted)
         ;
     if (argc > 1)
-        Arachne::createThreadOnCore(0, consumer);
+        Arachne::createThreadOnCore(core0, consumer);
     else
-        Arachne::createThreadOnCore(1, consumer);
+        Arachne::createThreadOnCore(core1, consumer);
     // Must be the last call
     Arachne::waitForTermination();
 
