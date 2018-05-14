@@ -1,3 +1,4 @@
+#include <sys/wait.h>
 #include <stdio.h>
 #include <atomic>
 #include <thread>
@@ -153,7 +154,7 @@ main(int argc, const char** argv) {
         CoreArbiterClient* client = CoreArbiterClient::getInstance();
         lowPriorityExec(client, lowPriorityRunning);
 
-        wait();
+        wait(NULL);
 #if TIME_TRACE
         TimeTrace::setOutputFileName("CoreRequest_Contended_LowPriority.log");
         TimeTrace::print();
