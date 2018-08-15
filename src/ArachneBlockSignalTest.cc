@@ -83,8 +83,6 @@ consumer() {
         uint64_t stopTime = Cycles::rdtsc();
         PerfUtils::Util::serialize();
         latencies[i] = stopTime - beforeSignal;
-        while (consumerIsReady)
-            ;
         consumerIsReady = 1;
     }
 }
