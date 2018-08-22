@@ -20,12 +20,14 @@ Arachne::SpinLock mutex;
 Arachne::ThreadId producerId;
 
 std::atomic<bool> producerHasStarted;
+std::atomic<bool> productIsConsumed;
 
 void
 producer() {
     producerHasStarted = true;
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        Arachne::block();
+        while (!productIsConsumed);
+        productIsConsumed = false;
         mutex.lock();
         beforeNotify = Cycles::rdtsc();
         productIsReady.notifyOne();
@@ -37,7 +39,7 @@ void
 consumer() {
     mutex.lock();
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        Arachne::signal(producerId);
+        productIsConsumed = true;
         productIsReady.wait(mutex);
         uint64_t wakeupTime = Cycles::rdtsc();
         PerfUtils::Util::serialize();
@@ -79,6 +81,7 @@ main(int argc, const char** argv) {
     // thread that runs the producer.
     while (!producerHasStarted)
         ;
+    productIsConsumed = false;
     if (argc > 1)
         Arachne::createThreadOnCore(core0, consumer);
     else

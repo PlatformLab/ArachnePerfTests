@@ -11,7 +11,6 @@ bin/ArachneCreateTest | tail -n 1 ;
 bin/NullYieldTest | tail -n 1 ;
 bin/ArachneYieldTest | tail -n 1 ;
 bin/ArachneCVTest | tail -n 1;
-bin/ArachneBlockSignalTest | tail -n 1;
 bin/ThreadTurnaround | tail -n 1 ) 2>/dev/null | scripts/column.py -s,
 
 
