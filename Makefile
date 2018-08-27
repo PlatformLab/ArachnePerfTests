@@ -1,21 +1,20 @@
 CXX ?= g++
-CXXFLAGS=-std=c++11 -g -O3 -Wall -Werror -Wformat=2 -Wextra -Wwrite-strings -Wno-unused-parameter -Wmissing-format-attribute -Wno-non-template-friend -Woverloaded-virtual -Wcast-qual -Wcast-align -Wconversion -fomit-frame-pointer $(EXTRA_CXXFLAGS)
+CXXFLAGS=-std=c++11 -O3 -Wall -Werror -Wformat=2 -Wextra -Wwrite-strings -Wno-unused-parameter -Wmissing-format-attribute -Wno-non-template-friend -Woverloaded-virtual -Wcast-qual -Wcast-align -Wconversion -fomit-frame-pointer $(EXTRA_CXXFLAGS)
 
 # Output directories
 SRC_DIR = src
 BIN_DIR = bin
 
 # Dependencies
-WAIT_FREE_QUEUE=../waitfree-mpsc-queue
 PERFUTILS=../PerfUtils
 ARACHNE=../Arachne
 COREARBITER=../CoreArbiter
 LIBS=-I$(ARACHNE)/include -I$(COREARBITER)/include  -I$(PERFUTILS)/include \
-	-I$(WAIT_FREE_QUEUE) \
-	-L$(ARACHNE)/lib -lArachne $(WAIT_FREE_QUEUE)/libmpscq.a -L$(COREARBITER)/lib -lCoreArbiter \
+	-L$(ARACHNE)/lib -lArachne -L$(COREARBITER)/lib -lCoreArbiter \
 	$(PERFUTILS)/lib/libPerfUtils.a -lpcrecpp -pthread
 
 BINS = ArachneCreateTest  NullYieldTest ArachneYieldTest ArachneCVTest \
+		ArachneBlockSignalTest ArachneBlockSignal_ContextSwitchTest \
 		ThreadTurnaround CoreRequest_Contended_Latency \
 		CoreRequest_Contended_Timeout_Latency CoreRequest_Noncontended_Latency
 
