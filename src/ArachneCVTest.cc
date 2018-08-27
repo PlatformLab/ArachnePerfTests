@@ -69,9 +69,6 @@ sleeper() {
 
 int
 main(int argc, const char** argv) {
-    int threadListLength = 0;
-    if (argc > 1)
-        threadListLength = atoi(argv[1]);
     // Initialize the library
     Arachne::minNumCores = 4;
     Arachne::maxNumCores = 4;
@@ -84,7 +81,7 @@ main(int argc, const char** argv) {
             options.hypertwinsActive, options.numSleepers);
 
     // Add a bunch of threads to the run list that will never get to run again.
-    for (int i = 0; i < threadListLength; i++) {
+    for (int i = 0; i < options.numSleepers; i++) {
         Arachne::createThreadOnCore(coresOrderedByHT[1], sleeper);
     }
 
