@@ -2,7 +2,6 @@
 #include <string.h>
 #include <random>
 #include <vector>
-#include <unordered_map>
 
 #include "Arachne/Arachne.h"
 #include "Arachne/CorePolicy.h"

@@ -1,6 +1,9 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <unordered_map>
+#include <vector>
+
 // This set of options contains the union of all options used by any of the
 // latency microbenchmarks which are pat of ArachnePerfTests. Not all options
 // are used by all benchmarks.
