@@ -7,6 +7,7 @@
 #include "PerfUtils/Cycles.h"
 #include "PerfUtils/Stats.h"
 #include "PerfUtils/Util.h"
+#include "Common.h"
 
 #define NUM_SAMPLES 10000000
 #define MEAN_DELAY 0.000002
@@ -22,8 +23,6 @@ static uint64_t arrayIndex = 0;
 
 std::atomic<uint64_t> exitTime;
 std::atomic<bool> canExit;
-
-static int threadListLength = 0;
 
 std::atomic<bool> exitStarted(false);
 
@@ -49,18 +48,23 @@ sleeper() {
 }
 
 int
-realMain() {
+realMain(std::vector<int>* coresOrderedByHT, Options* options) {
+    // Idle hypertwins if they aren't needed to be active.
+    if (!options->hypertwinsActive) {
+        Arachne::idleCore((*coresOrderedByHT)[1]);
+        Arachne::idleCore((*coresOrderedByHT)[3]);
+    }
     // Page in our data store
     memset(latencies, 0, NUM_SAMPLES * sizeof(uint64_t));
 
-    int core1 = Arachne::getCorePolicy()->getCores(0)[1];
+    int core1 = (*coresOrderedByHT)[2];
 
     // Start one thread before creating sleeper threads to reserve slot 0
     Arachne::ThreadId id = Arachne::createThreadOnCore(core1, exitingTask);
 
     // Add a bunch of threads to the run list that will never run again, to
     // check for interference with creation and turn around.
-    for (int i = 0; i < threadListLength; i++)
+    for (int i = 0; i < options->numSleepers; i++)
         Arachne::createThreadOnCore(core1, sleeper);
 
     // Awaken the exitingTask thread and wait it to exit
@@ -92,6 +96,10 @@ realMain() {
     fprintf(devNull, "%lu\n", k);
     fclose(devNull);
 
+    if (!options->hypertwinsActive) {
+        Arachne::unidleCore((*coresOrderedByHT)[1]);
+        Arachne::unidleCore((*coresOrderedByHT)[3]);
+    }
     Arachne::shutDown();
     return 0;
 }
@@ -103,16 +111,18 @@ realMain() {
 int
 main(int argc, const char** argv) {
     // Initialize the library
-    Arachne::minNumCores = 2;
-    Arachne::maxNumCores = 2;
+    Arachne::minNumCores = 4;
+    Arachne::maxNumCores = 4;
     Arachne::disableLoadEstimation = true;
     Arachne::Logger::setLogLevel(Arachne::WARNING);
     Arachne::init(&argc, argv);
 
-    if (argc > 1)
-        threadListLength = atoi(argv[1]);
-    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
-    Arachne::createThreadOnCore(core0, realMain);
+    Options options = parseOptions(argc, const_cast<char**>(argv));
+    printf("Active Hypertwins: %d\nNumber of Sleeping Threads: %d\n", options.hypertwinsActive, options.numSleepers);
+
+    std::vector<int> coresOrderedByHT = getCoresOrderedByHT();
+
+    Arachne::createThreadOnCore(coresOrderedByHT[0], realMain, &coresOrderedByHT, &options);
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
