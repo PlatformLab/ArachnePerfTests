@@ -7,6 +7,8 @@
 #include "PerfUtils/Stats.h"
 #include "PerfUtils/Util.h"
 
+#include "Common.h"
+
 #define NUM_SAMPLES 10000000
 
 using PerfUtils::Cycles;
@@ -23,7 +25,12 @@ std::atomic<bool> producerHasStarted;
 std::atomic<bool> productIsConsumed;
 
 void
-producer() {
+producer(std::vector<int>* coresOrderedByHT, Options* options) {
+    if (!options->hypertwinsActive) {
+        Arachne::idleCore((*coresOrderedByHT)[1]);
+        Arachne::idleCore((*coresOrderedByHT)[3]);
+    }
+
     producerHasStarted = true;
     for (int i = 0; i < NUM_SAMPLES; i++) {
         while (!productIsConsumed);
@@ -32,6 +39,11 @@ producer() {
         beforeNotify = Cycles::rdtsc();
         productIsReady.notifyOne();
         mutex.unlock();
+    }
+
+    if (!options->hypertwinsActive) {
+        Arachne::unidleCore((*coresOrderedByHT)[1]);
+        Arachne::unidleCore((*coresOrderedByHT)[3]);
     }
 }
 
@@ -61,20 +73,23 @@ main(int argc, const char** argv) {
     if (argc > 1)
         threadListLength = atoi(argv[1]);
     // Initialize the library
-    Arachne::minNumCores = 2;
-    Arachne::maxNumCores = 2;
+    Arachne::minNumCores = 4;
+    Arachne::maxNumCores = 4;
     Arachne::disableLoadEstimation = true;
     Arachne::init(&argc, argv);
 
-    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
-    int core1 = Arachne::getCorePolicy()->getCores(0)[1];
+    std::vector<int> coresOrderedByHT = getCoresOrderedByHT();
+    Options options = parseOptions(argc, const_cast<char**>(argv));
+    printf("Active Hypertwin: %d\nNumber of Sleeping Threads: %d\n",
+            options.hypertwinsActive, options.numSleepers);
+
     // Add a bunch of threads to the run list that will never get to run again.
     for (int i = 0; i < threadListLength; i++) {
-        Arachne::createThreadOnCore(core1, sleeper);
+        Arachne::createThreadOnCore(coresOrderedByHT[1], sleeper);
     }
 
     // Add some work
-    producerId = Arachne::createThreadOnCore(core0, producer);
+    producerId = Arachne::createThreadOnCore(coresOrderedByHT[0], producer, &coresOrderedByHT, &options);
     asm volatile("" : : : "memory");
     // Wait for producer to start running before starting consumer, to mitigate
     // a race where the consumer signals before initialization of the kernel
@@ -82,10 +97,7 @@ main(int argc, const char** argv) {
     while (!producerHasStarted)
         ;
     productIsConsumed = false;
-    if (argc > 1)
-        Arachne::createThreadOnCore(core0, consumer);
-    else
-        Arachne::createThreadOnCore(core1, consumer);
+    Arachne::createThreadOnCore(coresOrderedByHT[2], consumer);
     // Must be the last call
     Arachne::waitForTermination();
 
