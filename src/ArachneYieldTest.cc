@@ -8,6 +8,8 @@
 #include "PerfUtils/Stats.h"
 #include "PerfUtils/Util.h"
 
+#include "Common.h"
+
 #define NUM_SAMPLES 10000000
 
 using PerfUtils::Cycles;
@@ -56,12 +58,16 @@ yielder() {
 }
 
 int
-realMain() {
+realMain(std::vector<int>* coresOrderedByHT, Options* options) {
+    // Idle hypertwins if they aren't needed to be active.
+    if (!options->hypertwinsActive) {
+        Arachne::idleCore((*coresOrderedByHT)[1]);
+    }
+    PerfUtils::Util::serialize();
     // Page in our data store
     memset(latencies, 0, NUM_SAMPLES * sizeof(uint64_t));
 
-    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
-    Arachne::ThreadId id = Arachne::createThreadOnCore(core0, yielder);
+    Arachne::ThreadId id = Arachne::createThreadOnCore((*coresOrderedByHT)[0], yielder);
     for (int i = 0; i < NUM_SAMPLES; i++) {
         uint64_t beforeYield = Cycles::rdtsc();
         timeTrace("About to yield in thread 1");
@@ -70,6 +76,11 @@ realMain() {
         latencies[i] = (Cycles::rdtsc() - beforeYield) / 2;
     }
     Arachne::join(id);
+
+    PerfUtils::Util::serialize();
+    if (!options->hypertwinsActive) {
+        Arachne::unidleCore((*coresOrderedByHT)[1]);
+    }
     Arachne::shutDown();
     return 0;
 }
@@ -81,8 +92,13 @@ main(int argc, const char** argv) {
     Arachne::maxNumCores = 2;
     Arachne::disableLoadEstimation = true;
     Arachne::init(&argc, argv);
-    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
-    Arachne::createThreadOnCore(core0, realMain);
+
+    std::vector<int> coresOrderedByHT = getCoresOrderedByHT();
+
+    Options options = parseOptions(argc, const_cast<char**>(argv));
+    printf("Active Hypertwin: %d\n", options.hypertwinsActive);
+
+    Arachne::createThreadOnCore(coresOrderedByHT[0], realMain, &coresOrderedByHT, &options);
     // Must be the last call
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)
