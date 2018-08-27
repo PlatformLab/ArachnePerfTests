@@ -10,6 +10,8 @@
 #include "PerfUtils/Util.h"
 #include "PerfUtils/TimeTrace.h"
 
+#include "Common.h"
+
 using PerfUtils::Cycles;
 using PerfUtils::TimeTrace;
 
@@ -49,7 +51,13 @@ std::atomic<uint64_t> beforeSignal;
 Arachne::ThreadId consumerId;
 
 void
-producer() {
+producer(std::vector<int>* coresOrderedByHT, Options* options) {
+    // Idle hypertwins if they aren't needed to be active.
+    if (!options->hypertwinsActive) {
+        Arachne::idleCore((*coresOrderedByHT)[1]);
+        Arachne::idleCore((*coresOrderedByHT)[3]);
+    }
+
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> uniformIG(0, MEAN_DELAY * 2);
@@ -70,6 +78,11 @@ producer() {
         Arachne::signal(consumerId);
     }
     Arachne::join(consumerId);
+
+    if (!options->hypertwinsActive) {
+        Arachne::unidleCore((*coresOrderedByHT)[1]);
+        Arachne::unidleCore((*coresOrderedByHT)[3]);
+    }
     Arachne::shutDown();
 }
 
@@ -97,25 +110,24 @@ sleeper() {
 int
 main(int argc, const char** argv) {
     // Initialize the library
-    Arachne::minNumCores = 2;
-    Arachne::maxNumCores = 2;
+    Arachne::minNumCores = 4;
+    Arachne::maxNumCores = 4;
     Arachne::disableLoadEstimation = true;
     Arachne::Logger::setLogLevel(Arachne::WARNING);
     Arachne::init(&argc, argv);
 
-    int threadListLength = 0;
-    if (argc > 1)
-        threadListLength = atoi(argv[1]);
+    Options options = parseOptions(argc, const_cast<char**>(argv));
+    printf("Active Hypertwins: %d\nNumber of Sleeping Threads: %d\n", options.hypertwinsActive, options.numSleepers);
 
-    int core0 = Arachne::getCorePolicy()->getCores(0)[0];
-    int core1 = Arachne::getCorePolicy()->getCores(0)[1];
+    std::vector<int> coresOrderedByHT = getCoresOrderedByHT();
+
     // Add a bunch of threads to the run list that will never get to run again.
-    for (int i = 0; i < threadListLength; i++)
-        Arachne::createThreadOnCore(core1, sleeper);
+    for (int i = 0; i < options.numSleepers; i++)
+        Arachne::createThreadOnCore(coresOrderedByHT[2], sleeper);
 
     // Add some work
-    consumerId = Arachne::createThreadOnCore(core1, consumer);
-    Arachne::createThreadOnCore(core0, producer);
+    consumerId = Arachne::createThreadOnCore(coresOrderedByHT[2], consumer);
+    Arachne::createThreadOnCore(coresOrderedByHT[0], producer, &coresOrderedByHT, &options);
     // Must be the last call
     Arachne::waitForTermination();
 
