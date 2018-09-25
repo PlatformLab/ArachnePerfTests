@@ -2,12 +2,13 @@
 #include <string.h>
 #include <random>
 #include <vector>
+#include <thread>
 
 #include "Arachne/Arachne.h"
 #include "Arachne/CorePolicy.h"
-#include "PerfUtils/TimeTrace.h"
 #include "PerfUtils/Cycles.h"
 #include "PerfUtils/Stats.h"
+#include "PerfUtils/TimeTrace.h"
 #include "PerfUtils/Util.h"
 
 #include "Common.h"
@@ -20,9 +21,10 @@ using PerfUtils::TimeTrace;
 
 namespace Arachne {
 extern bool disableLoadEstimation;
+extern volatile bool shutdown;
 void idleCore(int coreId);
 void unidleCore(int coreId);
-}
+}  // namespace Arachne
 
 // Uncomment the following line to enable TimeTraces.
 // #define TIME_TRACE 1
@@ -33,13 +35,11 @@ void unidleCore(int coreId);
 // frequently cast their 64-bit arguments into uint32_t explicitly: we will
 // help perform the casting internally.
 static inline void
-timeTrace(const char* format,
-        uint64_t arg0 = 0, uint64_t arg1 = 0, uint64_t arg2 = 0,
-        uint64_t arg3 = 0)
-{
+timeTrace(const char* format, uint64_t arg0 = 0, uint64_t arg1 = 0,
+          uint64_t arg2 = 0, uint64_t arg3 = 0) {
 #if TIME_TRACE
-    TimeTrace::record(format, uint32_t(arg0), uint32_t(arg1),
-            uint32_t(arg2), uint32_t(arg3));
+    TimeTrace::record(format, uint32_t(arg0), uint32_t(arg1), uint32_t(arg2),
+                      uint32_t(arg3));
 #endif
 }
 
@@ -55,14 +55,26 @@ task(uint64_t creationTime) {
     latencies[arrayIndex++] = latency;
 }
 
-int
-realMain(std::vector<int>* coresOrderedByHT, Options* options) {
-    // Idle hypertwins if they aren't needed to be active.
-    if (!options->hypertwinsActive) {
-        Arachne::idleCore((*coresOrderedByHT)[1]);
-        Arachne::idleCore((*coresOrderedByHT)[3]);
+// Assert that we are the creator's hypertwin.
+void
+assertAndSpin(int creatorId) {
+    if (Arachne::core.id != PerfUtils::Util::getHyperTwin(creatorId)) {
+        fprintf(stderr,
+                "assertAndSpin got scheduled onto %d, not the hypertwin"
+                " of %d\n",
+                Arachne::core.id, creatorId);
+        abort();
     }
-    int targetCore = (*coresOrderedByHT)[2];
+    while (!Arachne::shutdown)
+        ;
+}
+
+int
+realMain(Options* options) {
+    // Idle hypertwins if they aren't needed to be active.
+    if (options->hypertwinsActive) {
+        Arachne::createThreadWithClass(1, assertAndSpin, Arachne::core.id);
+    }
     // Page in our data store
     memset(latencies, 0, NUM_SAMPLES * sizeof(uint64_t));
 
@@ -82,18 +94,13 @@ realMain(std::vector<int>* coresOrderedByHT, Options* options) {
         PerfUtils::Util::serialize();
         uint64_t creationTime = Cycles::rdtsc();
         timeTrace("About to create");
-        Arachne::ThreadId id =
-            Arachne::createThreadOnCore(targetCore, task, creationTime);
+        Arachne::ThreadId id = Arachne::createThread(task, creationTime);
         Arachne::join(id);
     }
     FILE* devNull = fopen("/dev/null", "w");
     fprintf(devNull, "%lu\n", k);
     fclose(devNull);
 
-    if (!options->hypertwinsActive) {
-        Arachne::unidleCore((*coresOrderedByHT)[1]);
-        Arachne::unidleCore((*coresOrderedByHT)[3]);
-    }
     Arachne::shutDown();
     return 0;
 }
@@ -103,40 +110,38 @@ sleeper() {
     Arachne::block();
 }
 
-
 /**
  * The benchmark requires that the CoreArbiter is started with exactly 4
  * hyperthreads across 2 cores.
  */
 int
 main(int argc, const char** argv) {
+    uint32_t numHardwareCores = std::thread::hardware_concurrency();
     // Initialize the library
-    Arachne::minNumCores = 4;
-    Arachne::maxNumCores = 4;
+    if (argc > 1) { // Assume HtActive
+        Arachne::minNumCores = numHardwareCores - 2;
+        Arachne::maxNumCores = numHardwareCores - 2;
+    } else {
+        Arachne::minNumCores = numHardwareCores / 2;
+        Arachne::maxNumCores = numHardwareCores / 2;
+    }
     Arachne::disableLoadEstimation = true;
     Arachne::Logger::setLogLevel(Arachne::WARNING);
     Arachne::init(&argc, argv);
 
     Options options = parseOptions(argc, const_cast<char**>(argv));
-    printf("Active Hypertwins: %d\nNumber of Sleeping Threads: %d\n", options.hypertwinsActive, options.numSleepers);
+    printf("Active Hypertwins: %d\nNumber of Sleeping Threads: %d\n",
+           options.hypertwinsActive, options.numSleepers);
 
-    std::vector<int> coresOrderedByHT = getCoresOrderedByHT();
-
-    // Add a bunch of threads to the run list that will never run again, to
-    // check for interference with creation.
-    for (int i = 0; i < options.numSleepers; i++)
-        Arachne::createThreadOnCore(coresOrderedByHT[0], sleeper);
-
-    Arachne::createThreadOnCore(coresOrderedByHT[0], realMain, &coresOrderedByHT, &options);
+    Arachne::createThreadWithClass(1, realMain, &options);
     Arachne::waitForTermination();
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
-    printStatistics("Thread Creation Latency (NLB)", latencies, NUM_SAMPLES,
-                    "data");
+    printStatistics("Thread Creation Latency", latencies, NUM_SAMPLES, "data");
 #if TIME_TRACE
-        TimeTrace::setOutputFileName("ArachneCreateTest_TimeTrace.log");
-        TimeTrace::print();
+    TimeTrace::setOutputFileName("ArachneCreateTest_TimeTrace.log");
+    TimeTrace::print();
 #endif
 
-//    return 0;
+    //    return 0;
 }
