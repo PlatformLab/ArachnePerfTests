@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Arachne/Arachne.h"
+#include "PerfUtils/TimeTrace.h"
 #include "PerfUtils/Cycles.h"
 #include "PerfUtils/Stats.h"
 #include "PerfUtils/Util.h"
@@ -16,7 +17,27 @@ namespace Arachne {
 extern bool disableLoadEstimation;
 }
 
+// Uncomment the following line to enable TimeTraces.
+// #define TIME_TRACE 1
+
 using PerfUtils::Cycles;
+using PerfUtils::TimeTrace;
+
+// Provides a cleaner way of invoking TimeTrace::record, with the code
+// conditionally compiled in or out by the TIME_TRACE #ifdef. Arguments
+// are made uint64_t (as opposed to uin32_t) so the caller doesn't have to
+// frequently cast their 64-bit arguments into uint32_t explicitly: we will
+// help perform the casting internally.
+static inline void
+timeTrace(const char* format,
+        uint64_t arg0 = 0, uint64_t arg1 = 0, uint64_t arg2 = 0,
+        uint64_t arg3 = 0)
+{
+#if TIME_TRACE
+    TimeTrace::record(format, uint32_t(arg0), uint32_t(arg1),
+            uint32_t(arg2), uint32_t(arg3));
+#endif
+}
 
 uint64_t latencies[NUM_SAMPLES];
 static uint64_t arrayIndex = 0;
@@ -33,10 +54,12 @@ exitingTask() {
     while (!canExit)
         ;
     exitTime = Cycles::rdtsc();
+    timeTrace("First thread is exiting");
 }
 
 void
 startingTask() {
+    timeTrace("Second thread has begun");
     uint64_t startTime = Cycles::rdtsc();
     uint64_t latency = startTime - exitTime;
     latencies[arrayIndex++] = latency;
@@ -127,5 +150,12 @@ main(int argc, const char** argv) {
     for (int i = 0; i < NUM_SAMPLES; i++)
         latencies[i] = Cycles::toNanoseconds(latencies[i]);
     printStatistics("Thread Exit To Next Run", latencies, NUM_SAMPLES, "data");
+
+
+#if TIME_TRACE
+        TimeTrace::setOutputFileName("ThreadTurnaround_TimeTrace.log");
+        TimeTrace::print();
+#endif
+
     return 0;
 }
