@@ -42,7 +42,7 @@ timeTrace(const char* format,
 uint64_t latencies[NUM_SAMPLES];
 static uint64_t arrayIndex = 0;
 
-std::atomic<uint64_t> exitTime;
+thread_local uint64_t exitTime;
 std::atomic<bool> canExit;
 
 std::atomic<bool> exitStarted(false);
