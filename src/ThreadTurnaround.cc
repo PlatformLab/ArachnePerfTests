@@ -154,6 +154,7 @@ main(int argc, const char** argv) {
 
 #if TIME_TRACE
         TimeTrace::setOutputFileName("ThreadTurnaround_TimeTrace.log");
+        TimeTrace::keepOldEvents = true;
         TimeTrace::print();
 #endif
 
