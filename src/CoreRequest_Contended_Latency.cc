@@ -136,9 +136,13 @@ main(int argc, const char** argv) {
             ;
         client->setRequestedCores({2, 0, 0, 0, 0, 0, 0, 0});
 
-        std::thread highPriorityThread1(highPriorityBlock, std::ref(client));
+        // The order matters here beceause the thread that will be preempted
+        // must contact the arbiter later later.
         std::thread highPriorityThread2(highPriorityRequest, std::ref(client),
                                         lowPriorityRunning);
+        while (client->getNumOwnedCores() != 1)
+            ;
+        std::thread highPriorityThread1(highPriorityBlock, std::ref(client));
         highPriorityThread1.join();
         highPriorityThread2.join();
 
